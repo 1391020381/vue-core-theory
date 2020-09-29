@@ -19,6 +19,7 @@ module.exports = {
   },
   resolve: {
     // 告诉webpack，在解析模块的时候，应该搜索哪个目录
+    // node_modules存放第三方模块，source下为自己实现的Vue源码目录
     modules: [absPath('node_modules'), absPath('source')]
   },
   plugins: [
