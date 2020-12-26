@@ -1,11 +1,27 @@
 {
+  "name": "vue-core-theory",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
   "scripts": {
-    "start": "webpack-dev-server"
+    "dev": "rollup -c -w"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wangkaiwd/vue-core-theory.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/wangkaiwd/vue-core-theory/issues"
+  },
+  "homepage": "https://github.com/wangkaiwd/vue-core-theory#readme",
+  "dependencies": {
+    "rollup": "^2.35.1"
   },
   "devDependencies": {
-    "html-webpack-plugin": "^4.5.0",
-    "webpack": "^4.44.2",
-    "webpack-cli": "^3.3.12",
-    "webpack-dev-server": "^3.11.0"
+    "@rollup/plugin-node-resolve": "^11.0.1",
+    "rollup-plugin-serve": "^1.1.0"
   }
 }
