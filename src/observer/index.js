@@ -1,3 +1,5 @@
+import { arrayProtoCopy, observeArray } from './array';
+
 function observe (data) {
   // 如果是对象，会遍历对象中的每一个元素
   if (typeof data === 'object' && data !== null) {
@@ -35,7 +37,8 @@ class Observer {
     this.data = data;
     // 这里会对数组和对象进行单独处理，因为为数组中的每一个索引都设置get/set方法性能消耗比较大
     if (Array.isArray(data)) {
-
+      Object.setPrototypeOf(data, arrayProtoCopy);
+      observeArray(data);
     } else {
       this.walk();
     }
