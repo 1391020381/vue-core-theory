@@ -33,7 +33,12 @@ function defineProperty (target, key) {
 class Observer {
   constructor (data) {
     this.data = data;
-    this.walk();
+    // 这里会对数组和对象进行单独处理，因为为数组中的每一个索引都设置get/set方法性能消耗比较大
+    if (Array.isArray(data)) {
+
+    } else {
+      this.walk();
+    }
   }
 
   walk () {
