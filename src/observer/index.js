@@ -7,7 +7,7 @@ function observe (data) {
   }
 }
 
-function defineProperty (target, key) {
+function defineReactive (target, key) {
   let value = target[key];
   // 继续对value进行监听，如果value还是对象的话，会继续new Observer，执行defineProperty来为其设置get/set方法
   // 否则会在observe方法中什么都不做
@@ -33,21 +33,22 @@ function defineProperty (target, key) {
  * 为data中的所有对象设置`set/get`方法
  */
 class Observer {
-  constructor (data) {
-    this.data = data;
+  constructor (value) {
+    this.value = value;
     // 这里会对数组和对象进行单独处理，因为为数组中的每一个索引都设置get/set方法性能消耗比较大
-    if (Array.isArray(data)) {
-      Object.setPrototypeOf(data, arrayProtoCopy);
-      observeArray(data);
+    if (Array.isArray(value)) {
+      // TODO: observeArray是Observer中的方法，并且需要为data添加__ob__来表示Observer实例，方便之后直接通过Vue中data中值来直接进行调用
+      Object.setPrototypeOf(value, arrayProtoCopy);
+      observeArray(value);
     } else {
       this.walk();
     }
   }
 
   walk () {
-    for (const key in this.data) {
-      if (this.data.hasOwnProperty(key)) {
-        defineProperty(this.data, key);
+    for (const key in this.value) {
+      if (this.value.hasOwnProperty(key)) {
+        defineReactive(this.value, key);
       }
     }
   }
