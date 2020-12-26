@@ -9,6 +9,16 @@
   <script src="../dist/vue.js"></script>
 </head>
 <body>
-
+<script>
+  const vm = new Vue({
+    el: '#app',
+    data () {
+      return {
+        a: 1
+      };
+    }
+  });
+  // requirement: 修改和设置a的时候，要分别触发它的get/set方法
+</script>
 </body>
 </html>

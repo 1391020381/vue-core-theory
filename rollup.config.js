@@ -12,8 +12,8 @@ export default {
   plugins: [
     nodeResolve(),
     serve({
-      open: true,
-      openPage: '/usage/index.html'
+      open: true, // 服务器启动，自动打开浏览器
+      openPage: '/usage/index.html' // 服务器服务器启动，浏览器自动打开的页面
     })
   ]
 };
