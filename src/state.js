@@ -1,9 +1,12 @@
-import { observe } from './observe';
+import { observe } from './observer';
 
 function initState (vm) {
   const options = vm.$options;
   if (options.props) {
     initProps(vm);
+  }
+  if (options.methods) {
+    initMethods(vm);
   }
   if (options.data) {
     initData(vm);
@@ -11,6 +14,10 @@ function initState (vm) {
 }
 
 function initProps (vm) {
+
+}
+
+function initMethods (vm) {
 
 }
 
