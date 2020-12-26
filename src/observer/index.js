@@ -7,13 +7,20 @@ function observe (data) {
 
 function defineProperty (target, key) {
   let value = target[key];
+  // 继续对value进行监听，如果value还是对象的话，会继续new Observer，执行defineProperty来为其设置get/set方法
+  // 否则会在observe方法中什么都不做
+  observe(value);
   Object.defineProperty(target, key, {
     get () {
+      console.log('get value');
       return value;
     },
     set (newValue) {
       if (newValue !== value) {
+        // 新加的元素也可能是对象，继续为新加对象的属性设置get/set方法
+        observe(newValue);
         // 这样写会新将value指向一个新的值，而不会影响target[key]
+        console.log('set value');
         value = newValue;
       }
     }
@@ -25,13 +32,14 @@ function defineProperty (target, key) {
  */
 class Observer {
   constructor (data) {
-
+    this.data = data;
+    this.walk();
   }
 
-  walk (data) {
-    for (const key in data) {
-      if (data.hasOwnProperty(key)) {
-        defineProperty(data, key);
+  walk () {
+    for (const key in this.data) {
+      if (this.data.hasOwnProperty(key)) {
+        defineProperty(this.data, key);
       }
     }
   }

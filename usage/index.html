@@ -14,10 +14,18 @@
     el: '#app',
     data () {
       return {
-        a: 1
+        person: {
+          name: 'zs',
+          age: 18
+        }
       };
     }
   });
+
+  console.log(vm);
+  console.log('age', vm._data.person.age);
+  // 这里person并没有发生变化，因为它对应的内存空间的地址没有发生变化
+  vm._data.person.age = 20;
   // requirement: 修改和设置a的时候，要分别触发它的get/set方法
 </script>
 </body>
