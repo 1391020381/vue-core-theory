@@ -41,6 +41,16 @@ export function parseHtml (html) {
     html = html.slice(length);
   }
 
+  function createASTElement (tag, attrs) {
+    return {
+      tag,
+      type: 1,
+      attrs,
+      children: [],
+      parent: null
+    };
+  }
+
   function parseStartTag () {
     const start = html.match(startTagOpen);
     if (start) {
@@ -65,21 +75,69 @@ export function parseHtml (html) {
     }
   }
 
-  function start (tag, attrs) {
+  // 树 + 栈
+  let root, currentParent;
+  const stack = [];
 
+  function start (tag, attrs) {
+    const element = createASTElement(tag, attrs);
+    if (!root) {
+      root = element;
+    }
+    currentParent = element;
+    stack.push(element);
+  }
+
+  // 每次处理好前一个，最后将所有元素作为子元素push到root节点中
+  function end (tag) { // 在结尾标签匹配时可以确立父子关系
+    // 当匹配到结尾标签时，栈中保存的最后一个元素要出栈
+    const element = stack.pop();
+    // 当匹配到结束标签时，它和栈中的最后一个元素的标签不一样，说明标签书写格式有问题
+
+    // 当栈中的元素为空时，说明处理完了所有元素
+    if (stack.length === 0) {return;}
+    currentParent = stack[stack.length - 1];
+    currentParent.children.push(element);
+    element.parent = currentParent;
+  }
+
+  function char (text) {
+    // 替换所有文本中的空格
+    text = text.replace(/\s/g, '');
+    currentParent.children.push({
+      type: 3,
+      text,
+      parent: currentParent
+    });
   }
 
   // 注意：在template中书写模板时可能开始和结束会有空白
   html = html.trim();
   while (html) {
-    // 标签会以 < 开头
+    // 开始和结束标签都会以 < 开头
     const textEnd = html.indexOf('<');
     if (textEnd === 0) {
+      // 处理开始标签
       const startTag = parseStartTag();
       if (startTag) {
         start(startTag.tag, startTag.attrs);
       }
+      // 处理结尾标签
+      const endTagMatch = html.match(endTag);
+      if (endTagMatch) {
+        end(endTagMatch[1]);
+        advance(endTagMatch[0].length);
+      }
     }
-    break;
+    //  < 在之后的位置，说明要处理的是文本内容
+    if (textEnd > 0) { // 处理文本内容
+      let text = html.slice(0, textEnd);
+      if (text) {
+        char(text);
+        advance(text.length);
+      }
+    }
   }
+  console.log('root', root);
+  return root;
 }
