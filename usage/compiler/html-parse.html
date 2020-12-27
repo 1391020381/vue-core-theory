@@ -9,14 +9,27 @@
   <script src="../../dist/vue.js"></script>
 </head>
 <body>
-<div id="app"></div>
+<div id="app">
+  <div id="aa">hello {{name}} <span class="bb">world</span></div>
+</div>
 <script>
   const vm = new Vue({
     el: '#app',
     data () {
-      return {};
-    }
+      return {
+        name: 'zs'
+      };
+    },
+    // render () {
+    //
+    // }
   });
+
+  // 渲染操作：
+  //   1. 如果el选项对应的dom元素存在，执行vm.$mount(el)。否则手动执行vm.$mount()，需要自己传入对应的挂载dom元素
+  //   2. 在vm.$mount执行时，需要判断是否存在render函数，如果存在render函数会先处理render函数
+  //   3. 如果不存在render函数，会判断是否存在template，如果没有template，会将el.outerHTML作为template
+  //   4. 将template编译为render函数
 </script>
 </body>
 </html>
