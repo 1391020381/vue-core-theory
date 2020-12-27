@@ -12,24 +12,17 @@
 //   return new Fn();
 // }
 
-import { observe } from './index';
-
 const arrayProto = Array.prototype;
 export const arrayProtoCopy = Object.create(arrayProto);
 
 const methods = ['push', 'pop', 'unshift', 'shift', 'splice', 'reverse', 'sort'];
 
-export function observeArray (array) {
-  for (let i = 0; i < array.length; i++) {
-    const item = array[i];
-    observe(item);
-  }
-}
-
 methods.forEach(method => {
   arrayProtoCopy[method] = function (...args) {
-    const result = arrayProto[method].call(this, ...args);
+    const result = arrayProto[method].apply(this, args);
     console.log('change array value');
+    // data中的数组会调用这里定义的方法，this指向该数组
+    const ob = this.__ob__;
     let inserted;
     switch (method) {
       case 'push':
@@ -40,7 +33,7 @@ methods.forEach(method => {
         inserted = args.slice(2);
         break;
     }
-    observeArray(inserted);
+    if (inserted) {ob.observeArray();}
     return result;
   };
 });
