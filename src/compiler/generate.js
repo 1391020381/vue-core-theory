@@ -24,14 +24,14 @@ function genAttrs (attrs) {
     const attr = attrs[i];
     if (attr.name === 'style') {
       const styleValues = attr.value.split(',');
-      const styles = styleValues.map(item => {
+      // 可以对对象使用JSON.stringify来进行处理
+      attr.value = styleValues.reduce((obj, item) => {
         const [key, val] = item.split(':');
-        return `${key}:${JSON.stringify(val.trim())}`;
-      });
-      str += `${attr.name}:{${styles.join(',')}}`;
-    } else {
-      str += `${attr.name}:${JSON.stringify(attr.value)}`;
+        obj[key] = val;
+        return obj;
+      }, {});
     }
+    str += `${attr.name}:${JSON.stringify(attr.value)}`;
     if (i !== attrs.length - 1) {
       str += ',';
     }
