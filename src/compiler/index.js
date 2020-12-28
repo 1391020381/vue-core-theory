@@ -6,4 +6,5 @@ export function compileToFunctions (template) {
   const ast = parseHtml(template);
   // 通过ast语法树生成代码字符串
   const code = generate(ast);
+  console.log('code', code);
 }

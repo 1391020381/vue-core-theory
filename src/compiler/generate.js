@@ -30,35 +30,46 @@ function genAttrs (attrs) {
   return `{${str}}`;
 }
 
+// note regular expression lastIndex problem: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/lastIndex
 function genText (text) {
   if (!defaultTagRE.test(text)) {
     return `_v(${JSON.stringify(text)})`;
   }
   // <div id="aa">hello {{name}} xx{{msg}} hh <span style="color: red" class="bb">world</span></div>
   const tokens = [];
-
+  let lastIndex = defaultTagRE.lastIndex = 0;
+  let match;
+  while (match = defaultTagRE.exec(text)) {
+    // 这里的先后顺序如何确定？
+    if (match[1]) {
+      tokens.push(`_s(${JSON.stringify(match[1])})`);
+    }
+    tokens.push(text.slice(lastIndex, match.index));
+    lastIndex = defaultTagRE.lastIndex;
+  }
+  if (lastIndex < text.length) {
+    tokens.push(text.slice(lastIndex));
+  }
+  return `_v(${tokens.join('+')})`;
 }
 
 function genChildren (children, code = '') {
   for (let i = 0; i < children.length; i++) {
     const child = children[i];
     if (child.type === 1) {// 元素
-      // code = generate(child);
+      code += generate(child);
     } else if (child.type === 3) { // 文本
       code += genText(child.text);
+    }
+    if (i !== children.length - 1) {
+      code += ',';
     }
   }
   return code;
 }
 
-export function generate (ast) {
-  const children = genChildren(ast.children);
-  let code = `_c(
-    "${ast.tag}",
-    ${genAttrs(ast.attrs)},
-    ${children}
-  ) `;
-  console.log('code', code);
-  return code;
+export function generate (el) {
+  const children = genChildren(el.children);
+  return `_c("${el.tag}", ${genAttrs(el.attrs)}, ${children}) `;
 }
 
