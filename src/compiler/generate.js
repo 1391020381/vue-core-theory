@@ -53,23 +53,26 @@ function genText (text) {
   return `_v(${tokens.join('+')})`;
 }
 
-function genChildren (children, code = '') {
+function gen (child) {
+  if (child.type === 1) {
+    return generate(child);
+  } else if (child.type === 3) {
+    return genText(child.text);
+  }
+}
+
+function genChildren (children) { // 将children用','拼接起来
+  const result = [];
   for (let i = 0; i < children.length; i++) {
     const child = children[i];
-    if (child.type === 1) {// 元素
-      code += generate(child);
-    } else if (child.type === 3) { // 文本
-      code += genText(child.text);
-    }
-    if (i !== children.length - 1) {
-      code += ',';
-    }
+    // 将生成结果放到数组中
+    result.push(gen(child));
   }
-  return code;
+  return result.join(',');
 }
 
 export function generate (el) {
   const children = genChildren(el.children);
-  return `_c("${el.tag}", ${genAttrs(el.attrs)}, ${children}) `;
+  return `_c("${el.tag}", ${genAttrs(el.attrs)}${children ? ',' + children : ''}) `;
 }
 
