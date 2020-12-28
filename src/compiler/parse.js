@@ -5,6 +5,7 @@ const startTagOpen = new RegExp(`^<${qnameCapture}`);
 const startTagClose = /^\s*(\/?)>/;
 const endTag = new RegExp(`^<\\/${qnameCapture}[^>]*>`);
 
+
 // 要解析的模板：
 // convert to object
 // const ast = {

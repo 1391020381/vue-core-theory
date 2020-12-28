@@ -9,16 +9,17 @@
   <script src="../../dist/vue.js"></script>
 </head>
 <body>
-<div id="app">
+<div id="app" name="xx">
   hh
-  <div id="aa">hello {{name}} <span class="bb">world</span></div>
+  <div id="aa">hello {{name}} xx{{msg}} hh <span style="color: red" class="bb">world</span></div>
 </div>
 <script>
   const vm = new Vue({
     el: '#app',
     data () {
       return {
-        name: 'zs'
+        name: 'zs',
+        msg: 'message'
       };
     },
     // render () {
