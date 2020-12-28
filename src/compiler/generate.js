@@ -22,7 +22,16 @@ function genAttrs (attrs) {
   let str = '';
   for (let i = 0; i < attrs.length; i++) {
     const attr = attrs[i];
-    str += `${attr.name}:${JSON.stringify(attr.value)}`;
+    if (attr.name === 'style') {
+      const styleValues = attr.value.split(',');
+      const styles = styleValues.map(item => {
+        const [key, val] = item.split(':');
+        return `${key}:${JSON.stringify(val.trim())}`;
+      });
+      str += `${attr.name}:{${styles.join(',')}}`;
+    } else {
+      str += `${attr.name}:${JSON.stringify(attr.value)}`;
+    }
     if (i !== attrs.length - 1) {
       str += ',';
     }

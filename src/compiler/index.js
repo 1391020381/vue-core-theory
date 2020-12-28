@@ -6,6 +6,7 @@ export function compileToFunctions (template) {
   const ast = parseHtml(template);
   // 通过ast语法树生成代码字符串
   const code = generate(ast);
-  // 将字符串转换为函数
   console.log('code', code);
+  // 将字符串转换为函数
+  return new Function(`with(this){return ${code}}`);
 }
