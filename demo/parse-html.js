@@ -1,12 +1,3 @@
-const template = `
-  <div id="app">
-    <div class="aa">
-      hello {{name}}
-      <span>world</span>
-    </div>
-  </div>
-`;
-
 // 将html解析为ast语法树
 function parseHtml (html) {
   const attribute = /^\s*([^\s"'<>\/=]+)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/;
@@ -128,5 +119,4 @@ function parseHtml (html) {
   return root;
 }
 
-const root = parseHtml(template.trim());
-console.log(root);
+module.exports = parseHtml;
