@@ -1,5 +1,6 @@
 import initState from './state';
 import { compileToFunctions } from './compiler';
+import { mountComponent } from './lifecycle';
 
 /**
  * 将字符串处理为dom元素
@@ -26,8 +27,8 @@ function initMixin (Vue) {
     }
   };
   Vue.prototype.$mount = function (el) {
-    el = query(el);
     const vm = this;
+    vm.$el = el = query(el);
     const options = vm.$options;
     if (!options.render) { // 有render函数，优先处理render函数
       let template = options.template;
@@ -36,6 +37,7 @@ function initMixin (Vue) {
       }
       options.render = compileToFunctions(template);
     }
+    mountComponent(vm);
   };
 }
 

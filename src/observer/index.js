@@ -18,7 +18,6 @@ function defineReactive (target, key) {
   observe(value);
   Object.defineProperty(target, key, {
     get () {
-      console.log('get value');
       return value;
     },
     set (newValue) {
@@ -26,7 +25,6 @@ function defineReactive (target, key) {
         // 新加的元素也可能是对象，继续为新加对象的属性设置get/set方法
         observe(newValue);
         // 这样写会新将value指向一个新的值，而不会影响target[key]
-        console.log('set value');
         value = newValue;
       }
     }

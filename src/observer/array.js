@@ -20,7 +20,6 @@ const methods = ['push', 'pop', 'unshift', 'shift', 'splice', 'reverse', 'sort']
 methods.forEach(method => {
   arrayProtoCopy[method] = function (...args) {
     const result = arrayProto[method].apply(this, args);
-    console.log('change array value');
     // data中的数组会调用这里定义的方法，this指向该数组
     const ob = this.__ob__;
     let inserted;

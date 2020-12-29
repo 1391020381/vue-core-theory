@@ -140,6 +140,5 @@ export function parseHtml (html) {
       }
     }
   }
-  console.log('root', root);
   return root;
 }
