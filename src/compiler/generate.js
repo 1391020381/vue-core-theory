@@ -27,7 +27,7 @@ function genAttrs (attrs) {
       // 可以对对象使用JSON.stringify来进行处理
       attr.value = styleValues.reduce((obj, item) => {
         const [key, val] = item.split(':');
-        obj[key] = val;
+        obj[key] = val.trim();
         return obj;
       }, {});
     }
