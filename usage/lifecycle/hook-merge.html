@@ -13,16 +13,6 @@
   <span style="font-size:18px">hell {{name}}</span>
 </div>
 <script>
-  // Vue生命周期：
-  //  1. 组件在实例化时会将options传入，options中包含生命周期函数
-  //  2. Vue会将实例的vm.constructor.options和options进行合并
-  //  3. 合并会根据不同的选型而采取不同的策略，生命周期函数最终会合并为一个数组
-  //  4. 创建callHook函数，将vm和要执行的生命周期名字传入，callHook会找到对应的数组，然后依次执行里面存储的钩子函数
-  Vue.mixin({
-    created () {
-      console.log('global created');
-    }
-  });
   const vm = new Vue({
     el: '#app',
     data () {
@@ -31,9 +21,6 @@
         msg: 'message'
       };
     },
-    created () {
-      console.log('component created');
-    }
   });
 </script>
 </body>

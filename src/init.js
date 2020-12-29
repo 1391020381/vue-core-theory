@@ -1,6 +1,7 @@
 import initState from './state';
 import { compileToFunctions } from './compiler';
-import { mountComponent } from './lifecycle';
+import { callHook, mountComponent } from './lifecycle';
+import mergeOptions from './shared/mergeOptions';
 
 /**
  * 将字符串处理为dom元素
@@ -17,9 +18,11 @@ function query (el) {
 function initMixin (Vue) {
   Vue.prototype._init = function (options) {
     const vm = this;
-    vm.$options = options;
+    vm.$options = mergeOptions(vm.constructor.options, options);
+    callHook(vm, 'beforeCreate');
     initState(vm);
-    const { el } = options;
+    callHook(vm, 'created');
+    const { el } = vm.$options;
     // el选项存在，会将el通过vm.$mount方法进行挂载
     // el选项如果不存在，需要手动调用vm.$mount方法来进行组件的挂载
     if (el) {

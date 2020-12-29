@@ -10,5 +10,21 @@ export function lifecycleMixin (Vue) {
 }
 
 export function mountComponent (vm) {
+  callHook(vm, 'beforeMount');
   vm._update(vm._render());
+  callHook(vm, 'mounted');
+}
+
+/**
+ * 调用声明周期函数
+ * @param vm
+ * @param hook
+ */
+export function callHook (vm, hook) {
+  const handlers = vm.$options[hook];
+  if (!handlers) {return;}
+  for (let i = 0; i < handlers.length; i++) {
+    const handler = handlers[i];
+    handler.call(vm);
+  }
 }
