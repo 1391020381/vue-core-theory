@@ -1,4 +1,5 @@
 const parseHtml = require('./parse-html');
+const generate = require('./generate');
 const template = `
   <div id="app">
     <div class="aa" style="color:red;border:1px solid pink;">
@@ -8,6 +9,7 @@ const template = `
   </div>
 `;
 const ast = parseHtml(template.trim());
+const code = generate(ast);
 // 移除parent后的
 // _c('div',
 //  {id:"app"},
