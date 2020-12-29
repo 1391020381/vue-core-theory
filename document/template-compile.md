@@ -1,5 +1,7 @@
 ## 模板编译
 
+> [Vue Template Explorer](https://template-explorer.vuejs.org/)
+
 用到的正则：
 
 ```javascript
@@ -15,3 +17,4 @@ const startTagClose = /^\s*(\/?)>/;
 // https://jex.im/regulex/#!flags=&re=%5E%3C%5C%2F((%3F%3A%5Ba-zA-Z_%5D%5B%5C-%5C.0-9_a-zA-Z%5D*%5C%3A)%3F%5Ba-zA-Z_%5D%5B%5C-%5C.0-9_a-zA-Z%5D*)%5B%5E%3E%5D*%3E
 const endTag = new RegExp(`^<\\/${qnameCapture}[^>]*>`);
 ```
+

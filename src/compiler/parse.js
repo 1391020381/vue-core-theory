@@ -104,11 +104,13 @@ export function parseHtml (html) {
   function char (text) {
     // 替换所有文本中的空格
     text = text.replace(/\s/g, '');
-    currentParent.children.push({
-      type: 3,
-      text,
-      parent: currentParent
-    });
+    if (currentParent && text) {
+      currentParent.children.push({
+        type: 3,
+        text,
+        parent: currentParent
+      });
+    }
   }
 
   // 注意：在template中书写模板时可能开始和结束会有空白

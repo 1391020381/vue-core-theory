@@ -17,3 +17,18 @@
 ### 优化静态节点
 
 这里会涉及到树的遍历，可以学习下这里的代码是如何编写的
+
+### 代码生成
+
+```javascript
+<div id="app" name="xx">
+  hh
+  <div id="aa">hello {{ name }} xx{{ msg }} hh
+    <span style="color: red" class="bb">world</span>
+  </div>
+  zz
+</div>
+```
+
+上边代码中`hh`和`zz`会被如何解析？
+
