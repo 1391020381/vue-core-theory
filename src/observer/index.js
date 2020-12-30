@@ -23,11 +23,12 @@ function defineReactive (target, key) {
     get () {
       if (Dep.target) { // 每个属性都收集watcher
         // 为对象的每一个属性收集依赖
-        dep.addSub(Dep.target);
+        dep.depend();
         if (childOb) {
           // 收集数组的依赖，在数组更新的时候，会调用notify方法，通知数组更新
           // 这里是定义在Observer中的另一个新的dep
-          childOb.dep.addSub(Dep.target);
+          childOb.dep.depend();
+          // 对于数组中依旧有数组的情况，需要对其再进行依赖收集
           dependArray(value);
         }
       }
@@ -51,6 +52,7 @@ function defineReactive (target, key) {
 class Observer {
   constructor (value) {
     this.value = value;
+    // 这里为对象额外收集了一个dep,是为了之后实现$set方法时进行利用
     this.dep = new Dep(); // data中对象和数组创建dep
     // 为data中的每一个对象和数组都添加__ob__属性，方便直接可以通过data中的属性来直接调用Observer实例上的属性和方法
     defineProperty(this.value, '__ob__', this);

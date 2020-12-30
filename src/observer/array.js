@@ -23,7 +23,8 @@ export function dependArray (data) {
   if (Array.isArray(data)) {
     for (let i = 0; i < data.length; i++) {
       const item = data[i];
-      item.__ob__?.dep.addSub(Dep.target);
+      // item也可能是对象，会对对象再次进行依赖收集，此时和defineReactive中收集的dep不是同一个
+      item.__ob__?.dep.depend();
       dependArray(item);
     }
   }
