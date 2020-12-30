@@ -11,7 +11,7 @@ class Dep {
   }
 
   depend () {
-    Dep.target.addDep();
+    Dep.target.addDep(this);
   }
 
   notify () {
