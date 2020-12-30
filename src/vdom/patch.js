@@ -36,4 +36,5 @@ export function patch (oldVNode, vNode) {
   const parentNode = oldVNode.parentNode;
   parentNode.insertBefore(el, oldVNode.nextSibling);
   parentNode.removeChild(oldVNode);
+  return el;
 }

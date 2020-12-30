@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <script src="../../dist/vue.js"></script>
+</head>
+<body>
+<div id="app">
+  <h2>{{name}}</h2>
+</div>
+<script>
+  // 生命周期：
+  const vm = new Vue({
+    el: '#app',
+    data () {
+      return {
+        name: 'zs',
+        arr: [1, 2, 3]
+      };
+    },
+  });
+  setTimeout(() => {
+    vm.name = 'ls';
+  }, 1000);
+</script>
+</body>
+</html>
