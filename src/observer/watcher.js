@@ -4,6 +4,7 @@ let id = 0;
 
 class Watcher {
   constructor (vm, exprOrFn, cb, options) {
+    this.id = id++;
     this.vm = vm;
     this.exprOrFn = exprOrFn;
     this.cb = cb;

@@ -12,10 +12,22 @@
 //   return new Fn();
 // }
 
+import Dep from './dep';
+
 const arrayProto = Array.prototype;
 export const arrayProtoCopy = Object.create(arrayProto);
 
 const methods = ['push', 'pop', 'unshift', 'shift', 'splice', 'reverse', 'sort'];
+
+export function dependArray (data) {
+  if (Array.isArray(data)) {
+    for (let i = 0; i < data.length; i++) {
+      const item = data[i];
+      item.__ob__?.dep.addSub(Dep.target);
+      dependArray(item);
+    }
+  }
+}
 
 methods.forEach(method => {
   arrayProtoCopy[method] = function (...args) {
@@ -33,6 +45,7 @@ methods.forEach(method => {
         break;
     }
     if (inserted) {ob.observeArray();}
+    ob.dep.notify();
     return result;
   };
 });

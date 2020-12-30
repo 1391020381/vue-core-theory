@@ -1,4 +1,4 @@
-import { arrayProtoCopy } from './array';
+import { arrayProtoCopy, dependArray } from './array';
 import { defineProperty } from '../shared/utils';
 import Dep from './dep';
 
@@ -8,7 +8,7 @@ function observe (data) {
     if (data.__ob__) {
       return;
     }
-    new Observer(data);
+    return new Observer(data);
   }
 }
 
@@ -17,12 +17,19 @@ function defineReactive (target, key) {
   let value = target[key];
   // 继续对value进行监听，如果value还是对象的话，会继续new Observer，执行defineProperty来为其设置get/set方法
   // 否则会在observe方法中什么都不做
-  observe(value);
+  const childOb = observe(value);
   const dep = new Dep();
   Object.defineProperty(target, key, {
     get () {
       if (Dep.target) { // 每个属性都收集watcher
+        // 为对象的每一个属性收集依赖
         dep.addSub(Dep.target);
+        if (childOb) {
+          // 收集数组的依赖，在数组更新的时候，会调用notify方法，通知数组更新
+          // 这里是定义在Observer中的另一个新的dep
+          childOb.dep.addSub(Dep.target);
+          dependArray(value);
+        }
       }
       return value;
     },
@@ -44,6 +51,7 @@ function defineReactive (target, key) {
 class Observer {
   constructor (value) {
     this.value = value;
+    this.dep = new Dep(); // data中对象和数组创建dep
     // 为data中的每一个对象和数组都添加__ob__属性，方便直接可以通过data中的属性来直接调用Observer实例上的属性和方法
     defineProperty(this.value, '__ob__', this);
     // 这里会对数组和对象进行单独处理，因为为数组中的每一个索引都设置get/set方法性能消耗比较大

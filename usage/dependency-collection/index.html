@@ -10,7 +10,7 @@
 </head>
 <body>
 <div id="app">
-  <h2>{{name}}</h2>
+  <h2>{{arr}}</h2>
 </div>
 <script>
   // 生命周期：
@@ -18,13 +18,13 @@
     el: '#app',
     data () {
       return {
-        name: 'zs',
-        arr: [1, 2, 3]
+        arr: [1, 2, 3, [1, 2, 3]]
       };
     },
   });
   setTimeout(() => {
-    vm.name = 'ls';
+    vm.arr.push(4);
+    vm.arr[3].push(4);
   }, 1000);
 </script>
 </body>
