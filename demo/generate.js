@@ -1,12 +1,12 @@
 // 将ast处理为代码字符串
-const defaultTagRE = /\{\{((?:.|\r?\n)+?)\}\}/g;
+const defaultTagRE = /{{((?:.|\r?\n)+?)}}/g;
 
 function genAttrs (attrs) {
   const results = [];
   attrs.forEach(attr => {
-    const { name, value } = attr;
+    let { name, value } = attr;
     if (name === 'style') {
-      attr.value = value.split(';').reduce((obj, cur) => {
+      value = value.split(';').reduce((obj, cur) => {
         const [key, val] = cur.split(':');
         obj[key] = val;
         return obj;
@@ -63,7 +63,7 @@ function genText (text) {
 
 function genElement (ast) {
   const children = genChildren(ast.children);
-  return `_c(${ast.tag}${ast.attrs
+  return `_c("${ast.tag}"${ast.attrs
     ?
     `,${genAttrs(ast.attrs)}` :
     `,undefined`
