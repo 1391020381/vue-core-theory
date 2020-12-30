@@ -1,13 +1,21 @@
 function vNode (tag, props, key, children, text) {
-  return { tag, props, key, children, text };
+  return {
+    tag,
+    props,
+    key,
+    children,
+    text
+  };
 }
 
-// 这其实是一个递归函数 _c 创建标签对应的虚拟节点并返回
-// _c('div',{id: 'app'},_c('span',{id:'hh'},_v('hh' + _s(name))))
 function createVElement (tag, props = {}, ...children) {
-  const key = props.key;
+  const { key } = props;
   delete props.key;
   return vNode(tag, props, key, children);
+}
+
+function createTextVNode (text) {
+  return vNode(undefined, undefined, undefined, undefined, text);
 }
 
 function stringify (value) {
@@ -20,16 +28,14 @@ function stringify (value) {
   }
 }
 
-function createTextVNode (text) {
-  return vNode(undefined, undefined, undefined, undefined, text);
-}
-
 export function renderMixin (Vue) {
+
   Vue.prototype._c = createVElement;
   Vue.prototype._v = createTextVNode;
   Vue.prototype._s = stringify;
   Vue.prototype._render = function () {
     const vm = this;
+    // 执行选项中的render方法，指定this为Vue实例
     const { render } = vm.$options;
     return render.call(vm);
   };
