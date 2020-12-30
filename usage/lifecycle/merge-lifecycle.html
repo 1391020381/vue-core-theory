@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <script src="../../dist/vue.js"></script>
+</head>
+<body>
+<div id="app">
+  hh
+  <div id="aa">hello {{name}} xx{{msg}} hh <span style="color: red" class="bb">world</span></div>
+  zz
+</div>
+<script>
+  // 生命周期：
+  Vue.mixin({
+    created () {
+      console.log('global created');
+    }
+  });
+  const vm = new Vue({
+    el: '#app',
+    data () {
+      return {
+        name: 'zs',
+        msg: 'message'
+      };
+    },
+    created () {
+      console.log('component created');
+    }
+  });
+  console.log('log', vm);
+</script>
+</body>
+</html>
