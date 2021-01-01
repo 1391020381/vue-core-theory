@@ -1,4 +1,5 @@
 import { popTarget, pushTarget } from './dep';
+import { nextTick } from '../shared/next-tick';
 
 let id = 0;
 
@@ -34,9 +35,44 @@ class Watcher {
   }
 
   update () {
-    console.log('update');
+    queueWatcher(this);
+  }
+
+  run () {
     this.get();
   }
 }
 
 export default Watcher;
+
+// $nextTick
+let queue = [];
+let has = {};
+let pending = false;
+// 更新操作：
+//  1. 更新data中的值
+//  2. 触发属性的set方法，或者数组的方法
+//  3. 会调用dep.notify让收集的watcher执行update方法
+//  4. 将刷新队列的操作放入异步队列中，等待主线程的代码执行完毕
+function flushQueue () {
+  console.log('flushQueue');
+  queue.forEach(watcher => {
+    watcher.run();
+  });
+  // 执行完成后清空队列
+  queue = [];
+  has = {};
+  pending = false;
+}
+
+function queueWatcher (watcher) {
+  const id = watcher.id;
+  if (!has[id]) {
+    queue.push(watcher);
+    has[id] = true;
+  }
+  if (!pending) {
+    pending = true;
+    nextTick(flushQueue);
+  }
+}
