@@ -26,6 +26,14 @@
     },
   });
   vm.name = 'ls';
+  console.log('html', vm.$el.outerHTML);
+  vm.$nextTick(() => {
+    // 1. 等到主线程的代码执行完毕，此时当前事件循环中的数据更改已经完成，会执行watcher的run方法进行页面更新
+    // 2. 首先会将代码中的flushQueue watcher放入队列中，之后将用户传入的放入队列中。
+    // 3. 等更改操作完成，会先执行页面更新操作，然后再执行用户传入的函数中的逻辑
+    // 4. 这里可以保证，在$nextTick中拿到数据更新后的DOM
+    console.log('next tick html', vm.$el.outerHTML);
+  });
   vm.msg = 'zz';
   // 1. 设置set/get方法，并有收集watcher
   // 2. 初渲染时，会通过new Watcher来执行render来从vm上进行取值，此时会触发页面上用到属性的get方法，Dep.target为render watcher，会将watcher收集
