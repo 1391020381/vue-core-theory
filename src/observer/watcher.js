@@ -18,9 +18,9 @@ class Watcher {
     }
     if (typeof exprOrFn === 'string') {
       this.getter = function () {
-        const array = exprOrFn.split('.');
+        const keys = exprOrFn.split('.');
         // 后一次拿到前一次的返回值，然后继续进行操作
-        return array.reduce((memo, cur) => memo[cur], vm);
+        return keys.reduce((memo, cur) => memo[cur], vm);
       };
     }
     this.value = this.get();

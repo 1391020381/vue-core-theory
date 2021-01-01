@@ -39,7 +39,7 @@ function initData (vm) {
   }
 }
 
-function createWatch (vm, key, userDefine) {
+function createWatcher (vm, key, userDefine) {
   let handler;
   if (typeof userDefine === 'function') {
     handler = userDefine;
@@ -66,7 +66,7 @@ function initWatch (vm) {
   for (const key in watch) {
     if (watch.hasOwnProperty(key)) {
       const userDefine = watch[key];
-      createWatch(vm, key, userDefine);
+      createWatcher(vm, key, userDefine);
     }
   }
 }
