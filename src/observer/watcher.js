@@ -10,12 +10,20 @@ class Watcher {
     this.exprOrFn = exprOrFn;
     this.cb = cb;
     this.options = options;
+    this.user = options.user;
     this.deps = [];
     this.depsId = new Set();
     if (typeof exprOrFn === 'function') {
       this.getter = this.exprOrFn;
     }
-    this.get();
+    if (typeof exprOrFn === 'string') {
+      this.getter = function () {
+        const array = exprOrFn.split('.');
+        // 后一次拿到前一次的返回值，然后继续进行操作
+        return array.reduce((memo, cur) => memo[cur], vm);
+      };
+    }
+    this.value = this.get();
   }
 
   addDep (dep) {
@@ -30,8 +38,9 @@ class Watcher {
 
   get () {
     pushTarget(this);
-    this.getter();
+    const value = this.getter();
     popTarget();
+    return value;
   }
 
   update () {
@@ -39,7 +48,11 @@ class Watcher {
   }
 
   run () {
-    this.get();
+    const value = this.get();
+    if (this.user) {
+      this.cb.call(this.vm, value, this.value);
+      this.value = value;
+    }
   }
 }
 

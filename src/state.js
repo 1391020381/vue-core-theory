@@ -1,5 +1,6 @@
 import { observe } from './observer';
 import { proxy } from './shared/utils';
+import Watcher from './observer/watcher';
 
 function initState (vm) {
   const options = vm.$options;
@@ -11,6 +12,9 @@ function initState (vm) {
   }
   if (options.data) {
     initData(vm);
+  }
+  if (options.watch) {
+    initWatch(vm);
   }
 }
 
@@ -34,8 +38,30 @@ function initData (vm) {
   }
 }
 
-function initWatch () {
-
+/**
+ * watch是一个对象，遍历对象中的每一个属性，它的值是一个函数
+ *
+ * watch在初始化时，会直接进行取值操作，拿到旧值，并且收集属性对应的用户定义的watcher。
+ * 在值被更新的时候，会执行收集的用户定义的watcher，会再次执行取值操作，这时拿到的是新值
+ *
+ * 执行key对应的handler，然后将新值、旧值传入，然后将旧值设置为新值，等待下一次的更新
+ *
+ * @param vm
+ */
+function initWatch (vm) {
+  const { watch } = vm.$options;
+  for (const key in watch) {
+    if (watch.hasOwnProperty(key)) {
+      const userDefine = watch[key];
+      let handler;
+      if (typeof userDefine === 'function') {
+        handler = userDefine;
+      } else {
+        handler = userDefine.handler;
+      }
+      new Watcher(vm, key, handler, { user: true });
+    }
+  }
 }
 
 function initComputed () {
