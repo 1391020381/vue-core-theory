@@ -1,6 +1,7 @@
 import { observe } from './observer';
 import { proxy } from './shared/utils';
 import Watcher from './observer/watcher';
+import { nextTick } from './shared/next-tick';
 
 function initState (vm) {
   const options = vm.$options;
@@ -38,6 +39,18 @@ function initData (vm) {
   }
 }
 
+function createWatch (vm, key, userDefine) {
+  let handler;
+  if (typeof userDefine === 'function') {
+    handler = userDefine;
+    userDefine = {};
+  } else {
+    handler = userDefine.handler;
+    delete userDefine.handler;
+  }
+  vm.$watch(key, handler, userDefine);
+}
+
 /**
  * watch是一个对象，遍历对象中的每一个属性，它的值是一个函数
  *
@@ -53,19 +66,24 @@ function initWatch (vm) {
   for (const key in watch) {
     if (watch.hasOwnProperty(key)) {
       const userDefine = watch[key];
-      let handler;
-      if (typeof userDefine === 'function') {
-        handler = userDefine;
-      } else {
-        handler = userDefine.handler;
-      }
-      new Watcher(vm, key, handler, { user: true });
+      createWatch(vm, key, userDefine);
     }
   }
 }
 
 function initComputed () {
 
+}
+
+export function stateMixin (Vue) {
+  Vue.prototype.$watch = function (exprOrFn, cb, options) {
+    const vm = this;
+    new Watcher(vm, exprOrFn, cb, { ...options, user: true });
+  };
+  Vue.prototype.$nextTick = function (cb) {
+    const vm = this;
+    nextTick(cb);
+  };
 }
 
 export default initState;
