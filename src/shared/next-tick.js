@@ -28,6 +28,10 @@ if (Promise) {
     const observe = observer.observe(textNode, { characterData: true });
     textNode.textContent = '2';
   };
+} else if (setImmediate) {
+  timerFunc = function () {
+    setImmediate(flushCallbacks);
+  };
 } else {
   timerFunc = function () {
     setTimeout(flushCallbacks);

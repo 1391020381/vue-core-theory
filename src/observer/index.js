@@ -17,7 +17,7 @@ function defineReactive (target, key) {
   let value = target[key];
   // 继续对value进行监听，如果value还是对象的话，会继续new Observer，执行defineProperty来为其设置get/set方法
   // 否则会在observe方法中什么都不做
-  const childOb = observe(value);
+  let childOb = observe(value);
   const dep = new Dep();
   Object.defineProperty(target, key, {
     get () {
@@ -37,7 +37,7 @@ function defineReactive (target, key) {
     set (newValue) {
       if (newValue !== value) {
         // 新加的元素也可能是对象，继续为新加对象的属性设置get/set方法
-        observe(newValue);
+        childOb = observe(newValue);
         // 这样写会新将value指向一个新的值，而不会影响target[key]
         value = newValue;
         dep.notify();

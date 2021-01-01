@@ -4,7 +4,7 @@ import { nextTick } from '../shared/next-tick';
 let id = 0;
 
 class Watcher {
-  constructor (vm, exprOrFn, cb, options) {
+  constructor (vm, exprOrFn, cb, options = {}) {
     this.id = id++;
     this.vm = vm;
     this.exprOrFn = exprOrFn;
@@ -54,10 +54,13 @@ let pending = false;
 //  2. 触发属性的set方法，或者数组的方法
 //  3. 会调用dep.notify让收集的watcher执行update方法
 //  4. 将刷新队列的操作放入异步队列中，等待主线程的代码执行完毕
-function flushQueue () {
-  console.log('flushQueue');
+function flushSchedulerQueue () {
+  console.log('flushSchedulerQueue');
   queue.forEach(watcher => {
     watcher.run();
+    if (watcher.options.render) { // 在更新之后执行对应的回调
+      watcher.cb();
+    }
   });
   // 执行完成后清空队列
   queue = [];
@@ -70,9 +73,9 @@ function queueWatcher (watcher) {
   if (!has[id]) {
     queue.push(watcher);
     has[id] = true;
-  }
-  if (!pending) {
-    pending = true;
-    nextTick(flushQueue);
+    if (!pending) {
+      pending = true;
+      nextTick(flushSchedulerQueue);
+    }
   }
 }
