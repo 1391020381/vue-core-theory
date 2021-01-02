@@ -105,8 +105,27 @@ function updateChildren (oldChildren, newChildren, parent) {
     newStartVNode = newChildren[0],
     newEndIndex = newChildren.length - 1,
     newEndVNode = newChildren[newEndIndex];
+
+  function makeMap () {
+    const map = {};
+    for (let i = 0; i < oldChildren.length; i++) {
+      const child = oldChildren[i];
+      map[child.key] = i;
+    }
+    return map;
+  }
+
+  // 将老节点的key和索引进行映射，之后可以直接通过key找到索引，然后通过索引找到对应的元素
+  // 这样提前做好映射关系，可以将查找的时间复杂度降到O(1)
+  const map = makeMap();
   while (oldStartIndex <= oldEndIndex && newStartIndex <= newEndIndex) {
-    if (isSameVNode(oldStartIndex, newStartIndex)) { // 头和头相等
+    if (oldStartVNode == null) {
+      oldStartVNode = oldChildren[++oldStartIndex];
+      continue;
+    } else if (oldEndVNode == null) {
+      oldEndVNode = oldChildren[--oldEndIndex];
+      continue;
+    } else if (isSameVNode(oldStartIndex, newStartIndex)) { // 头和头相等
       // 1. 可能是文本节点：需要继续比对文本节点
       // 2. 可能是元素：先比对元素的属性，然后再比对子节点
       patch(oldStartVNode, newStartVNode);
@@ -118,7 +137,7 @@ function updateChildren (oldChildren, newChildren, parent) {
       newEndVNode = newChildren[++newEndIndex];
     } else if (isSameVNode(oldStartVNode, newEndVNode)) { // 将开头元素移动到了末尾：尾和头相同
       // 老节点：需要将头节点对应的元素移动到尾节点之后
-      parent.appendChild(oldStartVNode.el);
+      parent.insertBefore(oldStartVNode, oldEndVNode.el.nextSibling);
       patch(oldStartVNode, newEndVNode);
       oldStartVNode = oldChildren[++oldStartIndex];
       newEndVNode = newChildren[++newEndIndex];
@@ -131,7 +150,17 @@ function updateChildren (oldChildren, newChildren, parent) {
       oldEndVNode = oldChildren[++oldEndIndex];
       newStartVNode = newChildren[++newStartIndex];
     } else {
-      break;
+      // 1. 用key来进行寻找，找到将其移动到头节点之前
+      // 2. 没有找到，将新头节点插入到老头节点之前
+      let moveIndex = map[newStartVNode.key];
+      if (moveIndex !== null) { // 找到了
+        const moveVNode = oldChildren[moveIndex];
+        parent.insertBefore(moveVNode.el, oldStartVNode.el);
+        oldChildren[moveIndex] = null; // 将移动这项标记为null，之后跳过，不再进行比对
+      } else {
+        parent.insertBefore(createElement(newStartVNode), oldStartVNode.el);
+      }
+      newStartVNode = newChildren[++newStartIndex];
     }
   }
   // 循环结束后:
@@ -142,5 +171,10 @@ function updateChildren (oldChildren, newChildren, parent) {
     const child = newChildren[i];
     const refEle = oldChildren[oldEndIndex + 1] || null;
     parent.insertBefore(createElement(child), refEle);
+  }
+  // 老节点中从头指针到尾指针为多余的元素，需要删除掉
+  for (let i = oldStartIndex; i <= oldEndIndex; i++) {
+    const child = oldChildren[i];
+    parent.removeChild(child.el);
   }
 }
