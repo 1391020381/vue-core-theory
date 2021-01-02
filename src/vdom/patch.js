@@ -1,4 +1,4 @@
-function updateProperties (vNode, oldProps) { // 老节点和新节点的属性
+function updateProperties (vNode, oldProps = {}) { // 老节点和新节点的属性
   const { el, props } = vNode;
   // 用新节点替换老节点中的属性
   for (const key in props) { // 为真实DOM设置新节点的所有属性
@@ -15,14 +15,16 @@ function updateProperties (vNode, oldProps) { // 老节点和新节点的属性
       }
     }
   }
+  const style = oldProps.style || {}; // 删除老节点中多余的样式
+  for (const key in style) {
+    if (props.style && !props.hasOwnProperty(key) && style.hasOwnProperty(key)) {
+      el.style[key] = '';
+    }
+  }
   // 如果老节点中有，而新节点中没有，需要将其删除
   for (const key in oldProps) {
     if (oldProps.hasOwnProperty(key) && !props.hasOwnProperty(key)) {
-      if (key === 'style') {
-        el.style[key] = '';
-      } else {
-        el.removeAttribute(key);
-      }
+      el.removeAttribute(key);
     }
   }
 }
