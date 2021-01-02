@@ -17,7 +17,7 @@ function updateProperties (vNode, oldProps = {}) { // 老节点和新节点的�
   }
   const style = oldProps.style || {}; // 删除老节点中多余的样式
   for (const key in style) {
-    if (props.style && !props.hasOwnProperty(key) && style.hasOwnProperty(key)) {
+    if (props.style && !props.style.hasOwnProperty(key) && style.hasOwnProperty(key)) {
       el.style[key] = '';
     }
   }
@@ -57,36 +57,32 @@ export function patch (oldVNode, vNode) {
     parentNode.removeChild(oldVNode);
     return el;
   } else { // 新旧节点都为虚拟节点，要进行dom diff
-    if (oldVNode.tag && vNode.tag) { // 文本或标签
-      if (oldVNode.tag === vNode.tag) {
-        // 1. 更新属性
-        // 2. 更新子节点
-        const el = vNode.el = oldVNode.el;
-        updateProperties(vNode, oldVNode.props);
-        const oldChildren = oldVNode.children;
-        const newChildren = vNode.children;
-        if (oldChildren.length === 0) { // 老节点没有
-          for (let i = 0; i < newChildren; i++) {
-            const child = newChildren[i];
-            el.appendChild(createElement(child));
-          }
-          return;
-        }
-        if (newChildren.length === 0) { // 新节点没有
-          el.innerHTML = '';
-          return;
-        }
-        // 老节点和新节点都有，进行DOM diff
-        updateChildren(oldChildren, newChildren, el);
-      } else { // 用老节点直接替换新节点
-        replaceChild(oldVNode.el, createElement(vNode));
+    if (oldVNode.tag !== vNode.tag) { // 不相等直接替换
+      return replaceChild(oldVNode.el, createElement(vNode));
+    }
+    if (!oldVNode.tag) { // 文本节点
+      return oldVNode.el.textContent = vNode.text;
+    }
+    // 元素相同，需要比较子元素
+    const el = vNode.el = oldVNode.el;
+    updateProperties(vNode, oldVNode.props);
+    const oldChildren = oldVNode.children;
+    const newChildren = vNode.children;
+    // 老的有，新的没有，将老的设置为空
+    // 老的没有，新的有，为老节点插入多有的新节点
+    // 老的和新的都有,遍历每一个进行比对
+    if (!oldChildren.length && newChildren.length) {
+      for (let i = 0; i < newChildren; i++) {
+        const child = newChildren[i];
+        el.appendChild(createElement(child));
       }
-    } else if (oldVNode.tag) {
-      replaceChild(oldVNode.el, createElement(vNode));
-    } else if (vNode.tag) { // 老节点是文本节点，新节点是元素
-      replaceChild(oldVNode.el, createElement(vNode));
-    } else { // 俩节点个都是文本节点
-      oldVNode.el.textContent = vNode.text;
+      return;
+    }
+    if (oldChildren.length && !newChildren.length) {
+      return el.innerHTML = '';
+    }
+    if (oldChildren.length && newChildren.length) {
+      updateChildren(oldChildren, newChildren, el);
     }
   }
 }
