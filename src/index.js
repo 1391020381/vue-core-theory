@@ -29,7 +29,7 @@ const vNode1 = render1.call(vm1);
 // 当oldVNode为DOM元素时，会用新节点直接替换老节点
 patch(document.getElementById('app'), vNode1);
 const html2 = `
-  <div id="app">
+  <div id="xx">
     333
   </div>
 `;

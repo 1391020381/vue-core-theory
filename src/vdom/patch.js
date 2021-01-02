@@ -1,6 +1,7 @@
-function updateProperties (vNode) {
+function updateProperties (vNode, oldProps) { // 老节点和新节点的属性
   const { el, props } = vNode;
-  for (const key in props) {
+  // 用新节点替换老节点中的属性
+  for (const key in props) { // 为真实DOM设置新节点的所有属性
     if (props.hasOwnProperty(key)) {
       const value = props[key];
       if (key === 'style') {
@@ -11,6 +12,16 @@ function updateProperties (vNode) {
         }
       } else {
         el.setAttribute(key, value);
+      }
+    }
+  }
+  // 如果老节点中有，而新节点中没有，需要将其删除
+  for (const key in oldProps) {
+    if (oldProps.hasOwnProperty(key) && !props.hasOwnProperty(key)) {
+      if (key === 'style') {
+        el.style[key] = '';
+      } else {
+        el.removeAttribute(key);
       }
     }
   }
@@ -48,6 +59,8 @@ export function patch (oldVNode, vNode) {
       if (oldVNode.tag === vNode.tag) {
         // 1. 更新属性
         // 2. 更新子节点
+        vNode.el = oldVNode.el;
+        updateProperties(vNode, oldVNode.props);
       } else { // 用老节点直接替换新节点
         replaceChild(oldVNode.el, createElement(vNode));
       }
