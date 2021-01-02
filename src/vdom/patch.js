@@ -108,7 +108,7 @@ function updateChildren (oldChildren, newChildren, parent) {
     const map = {};
     for (let i = 0; i < oldChildren.length; i++) {
       const child = oldChildren[i];
-      map[child.key] = i;
+      child.key && (map[child.key] = i);
     }
     return map;
   }
@@ -131,30 +131,32 @@ function updateChildren (oldChildren, newChildren, parent) {
       newStartVNode = newChildren[++newStartIndex];
     } else if (isSameVNode(oldEndVNode, newEndVNode)) { // 尾和尾相等
       patch(oldEndVNode, newEndVNode);
-      oldEndVNode = oldChildren[++oldEndIndex];
-      newEndVNode = newChildren[++newEndIndex];
+      oldEndVNode = oldChildren[--oldEndIndex];
+      newEndVNode = newChildren[--newEndIndex];
     } else if (isSameVNode(oldStartVNode, newEndVNode)) { // 将开头元素移动到了末尾：尾和头相同
       // 老节点：需要将头节点对应的元素移动到尾节点之后
       parent.insertBefore(oldStartVNode, oldEndVNode.el.nextSibling);
       patch(oldStartVNode, newEndVNode);
       oldStartVNode = oldChildren[++oldStartIndex];
-      newEndVNode = newChildren[++newEndIndex];
+      newEndVNode = newChildren[--newEndIndex];
     } else if (isSameVNode(oldEndVNode, newStartVNode)) { // 将结尾元素移动到了开头
       // A B C D
       // D A B C
       // 老节点： 将尾指针元素插入到头指针之前
       parent.insertBefore(oldEndVNode.el, oldStartVNode.el);
       patch(oldEndVNode, newStartVNode);
-      oldEndVNode = oldChildren[++oldEndIndex];
+      oldEndVNode = oldChildren[--oldEndIndex];
       newStartVNode = newChildren[++newStartIndex];
     } else {
       // 1. 用key来进行寻找，找到将其移动到头节点之前
       // 2. 没有找到，将新头节点插入到老头节点之前
       let moveIndex = map[newStartVNode.key];
-      if (moveIndex !== null) { // 找到了
+      if (moveIndex != undefined) { // 找到了
         const moveVNode = oldChildren[moveIndex];
         parent.insertBefore(moveVNode.el, oldStartVNode.el);
         oldChildren[moveIndex] = null; // 将移动这项标记为null，之后跳过，不再进行比对
+        // 还有对其属性和子节点再进行比较
+        patch(moveVNode, newStartVNode);
       } else {
         parent.insertBefore(createElement(newStartVNode), oldStartVNode.el);
       }
