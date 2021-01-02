@@ -106,19 +106,41 @@ function updateChildren (oldChildren, newChildren, parent) {
     newEndIndex = newChildren.length - 1,
     newEndVNode = newChildren[newEndIndex];
   while (oldStartIndex <= oldEndIndex && newStartIndex <= newEndIndex) {
-    if (isSameVNode(oldStartIndex, newStartIndex)) {
+    if (isSameVNode(oldStartIndex, newStartIndex)) { // 头和头相等
       // 1. 可能是文本节点：需要继续比对文本节点
       // 2. 可能是元素：先比对元素的属性，然后再比对子节点
       patch(oldStartVNode, newStartVNode);
       oldStartVNode = oldChildren[++oldStartIndex];
       newStartVNode = newChildren[++newStartIndex];
+    } else if (isSameVNode(oldEndVNode, newEndVNode)) { // 尾和尾相等
+      patch(oldEndVNode, newEndVNode);
+      oldEndVNode = oldChildren[++oldEndIndex];
+      newEndVNode = newChildren[++newEndIndex];
+    } else if (isSameVNode(oldStartVNode, newEndVNode)) { // 将开头元素移动到了末尾：尾和头相同
+      // 老节点：需要将头节点对应的元素移动到尾节点之后
+      parent.appendChild(oldStartVNode.el);
+      patch(oldStartVNode, newEndVNode);
+      oldStartVNode = oldChildren[++oldStartIndex];
+      newEndVNode = newChildren[++newEndIndex];
+    } else if (isSameVNode(oldEndVNode, newStartVNode)) { // 将结尾元素移动到了开头
+      // A B C D
+      // D A B C
+      // 老节点： 将尾指针元素插入到头指针之前
+      parent.insertBefore(oldEndVNode.el, oldStartVNode.el);
+      patch(oldEndVNode, newStartVNode);
+      oldEndVNode = oldChildren[++oldEndIndex];
+      newStartVNode = newChildren[++newStartIndex];
     } else {
       break;
     }
   }
-  // 循环结束后，剩余的新节点要插入到老节点之后
+  // 循环结束后:
+  // 结尾插入：剩余的新节点要插入到老节点的尾指针之后
+  // 开头插入：剩余节点要插入到老节点的头指针之前
+  // 总结：插入到尾指针的下一个指针对应的元素之前
   for (let i = newStartIndex; i <= newEndIndex; i++) {
     const child = newChildren[i];
-    parent.appendChild(createElement(child));
+    const refEle = oldChildren[oldEndIndex + 1] || null;
+    parent.insertBefore(createElement(child), refEle);
   }
 }
