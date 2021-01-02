@@ -12,3 +12,35 @@
   * 通过`render`函数生成虚拟节点
   * 通过虚拟节点生成真实节点
   * 将真实节点渲染到页面中
+* `Vue`中如对下面代码执行的理解
+  ```javascript
+  export default{
+    mounted() {
+    this.a = 1
+    this.a = 2
+    this.a = 3
+    }
+  }
+  ```
+  ```javascript
+  export default {
+    data() {
+      return {
+        a: 1
+      } 
+    },
+    watch: {
+      a(newValue,oldValue) {
+        console.log(newValue,oldValue)
+      }
+    },
+    mounted() {
+      this.a = 2
+      console.log(1)
+      this.$nextTick(() => {
+        this.a = 3
+        console.log(4)
+      })
+    }
+  }
+  ```
