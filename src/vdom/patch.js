@@ -59,8 +59,23 @@ export function patch (oldVNode, vNode) {
       if (oldVNode.tag === vNode.tag) {
         // 1. 更新属性
         // 2. 更新子节点
-        vNode.el = oldVNode.el;
+        const el = vNode.el = oldVNode.el;
         updateProperties(vNode, oldVNode.props);
+        const oldChildren = oldVNode.children;
+        const newChildren = vNode.children;
+        if (oldChildren.length === 0) { // 老节点没有
+          for (let i = 0; i < newChildren; i++) {
+            const child = newChildren[i];
+            el.appendChild(createElement(child));
+          }
+          return;
+        }
+        if (newChildren.length === 0) { // 新节点没有
+          el.innerHTML = '';
+          return;
+        }
+        // 老节点和新节点都有，进行DOM diff
+        updateChildren(oldChildren, newChildren, el);
       } else { // 用老节点直接替换新节点
         replaceChild(oldVNode.el, createElement(vNode));
       }
@@ -71,5 +86,39 @@ export function patch (oldVNode, vNode) {
     } else { // 俩节点个都是文本节点
       oldVNode.el.textContent = vNode.text;
     }
+  }
+}
+
+function isSameVNode (oldVNode, newVNode) {
+  return oldVNode.key === newVNode.key && oldVNode.tag === newVNode.tag;
+}
+
+function updateChildren (oldChildren, newChildren, parent) {
+  // 更新子节点:
+  //  1. 一层一层进行比较，如果发现有一层不一样，直接就会用新节点的子集来替换父节点的子集。
+  //  2. 比较时会采用双指针，对常见的操作进行优化
+  let oldStartIndex = 0,
+    oldStartVNode = oldChildren[0],
+    oldEndIndex = oldChildren.length - 1,
+    oldEndVNode = oldChildren[oldEndIndex];
+  let newStartIndex = 0,
+    newStartVNode = newChildren[0],
+    newEndIndex = newChildren.length - 1,
+    newEndVNode = newChildren[newEndIndex];
+  while (oldStartIndex <= oldEndIndex && newStartIndex <= newEndIndex) {
+    if (isSameVNode(oldStartIndex, newStartIndex)) {
+      // 1. 可能是文本节点：需要继续比对文本节点
+      // 2. 可能是元素：先比对元素的属性，然后再比对子节点
+      patch(oldStartVNode, newStartVNode);
+      oldStartVNode = oldChildren[++oldStartIndex];
+      newStartVNode = newChildren[++newStartIndex];
+    } else {
+      break;
+    }
+  }
+  // 循环结束后，剩余的新节点要插入到老节点之后
+  for (let i = newStartIndex; i <= newEndIndex; i++) {
+    const child = newChildren[i];
+    parent.appendChild(createElement(child));
   }
 }
