@@ -5,7 +5,7 @@
 * 对象：递归的为对象的每个属性都设置`get/set`方法
 * 数组：修改数组的原型方法，对于会修改原数组的方法进行了重写
 
-在用户为`data`中的对象设置、修改值以及调用修改原数组方法的时，都可以添加一些逻辑来进行处理，实现数据更新页面也同时更新。
+在用户为`data`中的对象设置值、修改值以及调用修改原数组的方法时，都可以添加一些逻辑来进行处理，实现数据更新页面也同时更新。
 
 > `Vue`中的响应式(`reactive`): 对对象属性或数组方法进行了拦截，在属性或数组更新时可以同时自动地更新视图。在代码中被观测过的数据具有响应性
 
@@ -64,7 +64,7 @@ function initMixin (Vue) {
 export default initMixin;
 ```
 
-在`_init`方法中，所有的`options`被放到了`vm.$options`中，这不仅让之后代码中可以更方便的来获取用户传入的配置项，也可以让用户通过这个`api`来获取实例化时传入的一些自定义选选项。并且在`Vuex`
+在`_init`方法中，所有的`options`被放到了`vm.$options`中，这不仅让之后代码中可以更方便的来获取用户传入的配置项，也可以让用户通过这个`api`来获取实例化时传入的一些自定义选选项。比如在`Vuex`
 和`Vue-Router`中，实例化时传入的`router`和`store`属性便可以通过`$options`获取到。
 
 除了设置`vm.$options`，`_init`中还执行了`initState`方法。该方法中会判断选项中传入的属性，来分别进行`props`、`methods`、`data`、`watch`、`computed`
@@ -110,9 +110,9 @@ function initData (vm) {
 export default initState;
 ```
 
-在`initData`中分别进行如下操作：
+在`initData`中进行了如下操作：
 
-1. 将`data`统一处理为对象
+1. `data`可能是对象或函数，这里将`data`统一处理为对象
 2. 观测`data`中的数据，为所有对象属性添加`set/get`方法，重写数组的原型链方法
 3. 将`data`中的属性代理到`vm`上，方便用户直接通过实例`vm`来访问对应的值，而不是通过`vm._data`来访问
 
@@ -173,7 +173,11 @@ class Observer {
 
 `Observer`类中会为对象和数组都添加`__ob__`属性，之后便可以直接通过`data`中的对象和数组`vm.obj.__ob__`来获取到`Observer`实例。
 
-当传入的`value`为数组时，会将数组的原型指向我们继承`Array.prototype`新创建的原型。创建`data`中数组原型的逻辑在`array.js`中：
+当传入的`value`为数组时，由于观测数组的每一个索引会耗费比较大的性能，并且在实际使用中，我们可能只会操作数组的第一项和最后一行，即`arr[0],arr[arr.length-1]`,很少会写出`arr[23] = xxx`的代码。
+
+这里我们选择**对数组的方法进行重写**，将数组的原型指向我们继承`Array.prototype`新创建的对象`arrayProtoCopy`，对数组中的每一项继续进行观测。
+
+创建`data`中数组原型的逻辑在`array.js`中：
 
 ```javascript
 // if (Array.isArray(value)) {
