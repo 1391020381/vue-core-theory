@@ -113,3 +113,166 @@ export default initState;
 1. 将`data`统一处理为对象
 2. 观测`data`中的数据，为所有对象属性添加`set/get`方法，重写数组的原型链方法
 3. 将`data`中的属性代理到`vm`上，方便用户直接通过实例`vm`来访问对应的值，而不是通过`vm._data`来访问
+
+新建`src/observer/index.js`，在这里书写`observe`函数的逻辑：
+
+```javascript
+function observe (data) {
+  // 如果是对象，会遍历对象中的每一个元素
+  if (typeof data === 'object' && data !== null) {
+    // 已经观测过的值不再处理
+    if (data.__ob__) {
+      return;
+    }
+    new Observer(data);
+  }
+}
+
+export { observe };
+```
+
+`observe`函数中会过滤`data`中的数据，只对对象和数组进行处理，真正的处理逻辑在`Observer`中：
+
+```javascript
+/**
+ * 为data中的所有对象设置`set/get`方法
+ */
+class Observer {
+  constructor (value) {
+    this.value = value;
+    // 为data中的每一个对象和数组都添加__ob__属性，方便直接可以通过data中的属性来直接调用Observer实例上的属性和方法
+    defineProperty(this.value, '__ob__', this);
+    // 这里会对数组和对象进行单独处理，因为为数组中的每一个索引都设置get/set方法性能消耗比较大
+    if (Array.isArray(value)) {
+      Object.setPrototypeOf(value, arrayProtoCopy);
+      this.observeArray(value);
+    } else {
+      this.walk();
+    }
+  }
+
+  walk () {
+    for (const key in this.value) {
+      if (this.value.hasOwnProperty(key)) {
+        defineReactive(this.value, key);
+      }
+    }
+  }
+
+  observeArray (value) {
+    for (let i = 0; i < value.length; i++) {
+      observe(value[i]);
+    }
+  }
+}
+```
+
+> **需要注意的是，`__ob__`属性要设置为不可枚举，否则之后在对象遍历时可能会引发死循环**
+
+`Observer`类中会为对象和数组都添加`__ob__`属性，之后便可以直接通过`data`中的对象和数组`vm.obj.__ob__`来获取到`Observer`实例。
+
+当传入的`value`为数组时，会将数组的原型指向我们继承`Array.prototype`新创建的原型。创建`data`中数组原型的逻辑在`array.js`中：
+
+```javascript
+// if (Array.isArray(value)) {
+//    Object.setPrototypeOf(value, arrayProtoCopy);
+//    this.observeArray();
+// }
+const arrayProto = Array.prototype;
+export const arrayProtoCopy = Object.create(arrayProto);
+
+const methods = ['push', 'pop', 'unshift', 'shift', 'splice', 'reverse', 'sort'];
+
+methods.forEach(method => {
+  arrayProtoCopy[method] = function (...args) {
+    const result = arrayProto[method].apply(this, args);
+    console.log('change array value');
+    // data中的数组会调用这里定义的方法，this指向该数组
+    const ob = this.__ob__;
+    let inserted;
+    switch (method) {
+      case 'push':
+      case 'unshift':
+        inserted = args;
+        break;
+      case 'splice': // splice(index,deleteCount,item1,item2)
+        inserted = args.slice(2);
+        break;
+    }
+    if (inserted) {ob.observeArray(inserted);}
+    return result;
+  };
+});
+```
+
+通过`Object.create`方法，可以创建一个原型为`Array.prototype`的新对象`arrayProtoCopy`。修改原数组的7个方法会设置为新对象的私有属性，并且在执行时会调用对应的`arrayProto`
+上对应的方法。
+
+在这样处理之后，便可以在`arrayProto`中的方法执行前后添加自己的逻辑，而这除了这7个方法外的其它方法，会根据原型链，使用`arrayProto`上的对应方法，并不会有任何额外的处理。
+
+在修改原数组的方法中，添加了如下的额外逻辑：
+
+```javascript
+const ob = this.__ob__;
+let inserted;
+switch (method) {
+  case 'push':
+  case 'unshift':
+    inserted = args;
+    break;
+  case 'splice': // splice(index,deleteCount,item1,item2)
+    inserted = args.slice(2);
+    break;
+}
+if (inserted) {ob.observeArray(inserted);}
+```
+
+`push`、`unshift`、`splice`会为数组新增元素，对于新增的元素，也要对其进行观测。这里利用到了`Observer`中为数组添加的`__ob__`属性，来直接调用`ob.observeArray`
+,对数组中新增的元素继续进行观测。
+
+对于对象，要遍历对象的每一个属性，来为其添加`set/get`方法。如果对象的属性依旧是对象，会对其进行递归处理
+
+```javascript
+function defineReactive (target, key) {
+  let value = target[key];
+  // 继续对value进行监听，如果value还是对象的话，会继续new Observer，执行defineProperty来为其设置get/set方法
+  // 否则会在observe方法中什么都不做
+  observe(value);
+  Object.defineProperty(target, key, {
+    get () {
+      console.log('get value');
+      return value;
+    },
+    set (newValue) {
+      if (newValue !== value) {
+        // 新加的元素也可能是对象，继续为新加对象的属性设置get/set方法
+        observe(newValue);
+        // 这样写会新将value指向一个新的值，而不会影响target[key]
+        console.log('set value');
+        value = newValue;
+      }
+    }
+  });
+}
+
+class Observer {
+  constructor (value) {
+    // some code ...
+    if (Array.isArray(value)) {
+
+    } else {
+      this.walk();
+    }
+  }
+
+  walk () {
+    for (const key in this.value) {
+      if (this.value.hasOwnProperty(key)) {
+        defineReactive(this.value, key);
+      }
+    }
+  }
+
+  // some code ...  
+}
+```
