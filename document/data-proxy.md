@@ -171,13 +171,13 @@ class Observer {
 
 > **需要注意的是，`__ob__`属性要设置为不可枚举，否则之后在对象遍历时可能会引发死循环**
 
-`Observer`类中会为对象和数组都添加`__ob__`属性，之后便可以直接通过`data`中的对象和数组`vm.obj.__ob__`来获取到`Observer`实例。
+`Observer`类中会为对象和数组都添加`__ob__`属性，之后便可以直接通过`data`中的对象和数组`vm.value.__ob__`来获取到`Observer`实例。
 
-当传入的`value`为数组时，由于观测数组的每一个索引会耗费比较大的性能，并且在实际使用中，我们可能只会操作数组的第一项和最后一行，即`arr[0],arr[arr.length-1]`,很少会写出`arr[23] = xxx`的代码。
+当传入的`value`为数组时，由于观测数组的每一个索引会耗费比较大的性能，并且在实际使用中，我们可能只会操作数组的第一项和最后一项，即`arr[0],arr[arr.length-1]`,很少会写出`arr[23] = xxx`的代码。
 
-这里我们选择**对数组的方法进行重写**，将数组的原型指向我们继承`Array.prototype`新创建的对象`arrayProtoCopy`，对数组中的每一项继续进行观测。
+所以我们选择**对数组的方法进行重写**，将数组的原型指向继承`Array.prototype`新创建的对象`arrayProtoCopy`，对数组中的每一项继续进行观测。
 
-创建`data`中数组原型的逻辑在`array.js`中：
+创建`data`中数组原型的逻辑在`src/observer/array.js`中：
 
 ```javascript
 // if (Array.isArray(value)) {
@@ -211,10 +211,10 @@ methods.forEach(method => {
 });
 ```
 
-通过`Object.create`方法，可以创建一个原型为`Array.prototype`的新对象`arrayProtoCopy`。修改原数组的7个方法会设置为新对象的私有属性，并且在执行时会调用对应的`arrayProto`
+通过`Object.create`方法，可以创建一个原型为`Array.prototype`的新对象`arrayProtoCopy`。修改原数组的7个方法会设置为新对象的私有属性，并且在执行时会调用`arrayProto`
 上对应的方法。
 
-在这样处理之后，便可以在`arrayProto`中的方法执行前后添加自己的逻辑，而这除了这7个方法外的其它方法，会根据原型链，使用`arrayProto`上的对应方法，并不会有任何额外的处理。
+在这样处理之后，便可以在`arrayProto`中的方法执行前后添加自己的逻辑，而除了这7个方法外的其它方法，会根据原型链，使用`arrayProto`上的对应方法，并不会有任何额外的处理。
 
 在修改原数组的方法中，添加了如下的额外逻辑：
 
@@ -265,7 +265,7 @@ class Observer {
   constructor (value) {
     // some code ...
     if (Array.isArray(value)) {
-
+      // some code ...
     } else {
       this.walk();
     }
