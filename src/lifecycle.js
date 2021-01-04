@@ -5,9 +5,9 @@ export function lifecycleMixin (Vue) {
   Vue.prototype._update = function (vNode) {
     const vm = this;
     const preVNode = vm._vNode;
+    vm._vNode = vNode;
     if (!preVNode) {
       vm.$el = patch(vm.$el, vNode);
-      vm._vNode = vNode;
     } else {
       patch(preVNode, vNode);
     }
