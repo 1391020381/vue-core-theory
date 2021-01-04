@@ -46,7 +46,7 @@ class Observer {
       // TODO: observeArray是Observer中的方法，并且需要为data添加__ob__来表示Observer实例，方便之后直接通过Vue中data中值来直接进行调用
       // TODO: 将公共方法进行提取
       Object.setPrototypeOf(value, arrayProtoCopy);
-      this.observeArray();
+      this.observeArray(value);
     } else {
       this.walk();
     }
@@ -60,9 +60,9 @@ class Observer {
     }
   }
 
-  observeArray () {
-    for (let i = 0; i < this.value.length; i++) {
-      observe(this.value[i]);
+  observeArray (value) {
+    for (let i = 0; i < value.length; i++) {
+      observe(value[i]);
     }
   }
 }

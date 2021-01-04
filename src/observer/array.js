@@ -33,7 +33,7 @@ methods.forEach(method => {
         inserted = args.slice(2);
         break;
     }
-    if (inserted) {ob.observeArray();}
+    if (inserted) {ob.observeArray(inserted);}
     return result;
   };
 });
