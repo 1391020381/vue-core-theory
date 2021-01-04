@@ -1,5 +1,5 @@
 import { observe } from './observer';
-import { proxy } from './shared/utils';
+import { noop, proxy } from './shared/utils';
 import Watcher from './observer/watcher';
 import { nextTick } from './shared/next-tick';
 import Dep from './observer/dep';
@@ -75,26 +75,51 @@ function initWatch (vm) {
   }
 }
 
+const sharedPropertyDefinition = {
+  enumerable: true,
+  configurable: true,
+  get: noop,
+  set: noop
+};
+
+// 利用高阶函数来传入额外的参数，并将想要的函数返回
+// 这里要用到每个计算属性watcher，其实可以将它作为参数传过来
+function createComputedGetter (key) {
+  return function () {
+    const watcher = this._computedWatchers[key];
+    if (watcher.dirty) {
+      // 执行key对应的函数，获得值赋值给watcher.value。并且在取值时会为依赖的值收集计算属性watcher
+      watcher.evaluate();
+      if (Dep.target) {
+        // 计算属性会收集它依赖的dep,让dep再收集渲染watcher，用于页面更新
+        watcher.depend();
+      }
+    }
+    return watcher.value;
+  };
+}
+
+function defineComputed (target, key, userDef) {
+  if (typeof userDef === 'function') {
+    sharedPropertyDefinition.get = createComputedGetter(key);
+  } else {
+    sharedPropertyDefinition.get = createComputedGetter(key);
+    sharedPropertyDefinition.set = userDef.set;
+  }
+  Object.defineProperty(target, key, sharedPropertyDefinition);
+}
+
 function initComputed (vm) {
   const { computed } = vm.$options;
+  const watchers = vm._computedWatchers = {};
   for (const key in computed) {
     if (computed.hasOwnProperty(key)) {
-      const watcher = new Watcher(vm, computed[key], () => {}, { lazy: true });
-      Object.defineProperty(vm, key, {
-        get () {
-          // Dep.target为渲染watcher,在渲染时生成虚拟节点时会使用render函数通过with(this)从实例里取值
-          // 这样会触发get方法，此时计算属性watcher会去求值，会触发依赖属性的get方法，收集计算属性watcher
-          // if (Dep.target) { // 为什么要判断Dep.target
-          if (watcher.dirty) {
-            watcher.evaluate();
-            if (Dep.target) {
-              watcher.depend();
-            }
-          }
-          // }
-          return watcher.value;
-        }
-      });
+      // 这里用户可能传入一个对象来配置set/get方法
+      const userDef = computed[key];
+      const getter = typeof userDef === 'function' ? userDef : userDef.get;
+      // 这样之后可以通过vm._computedWatchers来直接访问每个计算属性对应的watcher
+      watchers[key] = new Watcher(vm, getter, () => {}, { lazy: true });
+      defineComputed(vm, key, userDef);
     }
   }
 }

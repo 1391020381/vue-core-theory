@@ -16,3 +16,9 @@ export function proxy (target, key, source) {
     }
   });
 }
+
+// noop: short for no operation
+// https://en.wikipedia.org/wiki/NOP_(code)
+export function noop () {
+
+}
