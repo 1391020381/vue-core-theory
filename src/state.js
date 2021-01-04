@@ -84,12 +84,14 @@ function initComputed (vm) {
         get () {
           // Dep.target为渲染watcher,在渲染时生成虚拟节点时会使用render函数通过with(this)从实例里取值
           // 这样会触发get方法，此时计算属性watcher会去求值，会触发依赖属性的get方法，收集计算属性watcher
-          if (Dep.target) { // 为什么要判断Dep.target
-            if (watcher.dirty) {
-              watcher.evaluate();
+          // if (Dep.target) { // 为什么要判断Dep.target
+          if (watcher.dirty) {
+            watcher.evaluate();
+            if (Dep.target) {
               watcher.depend();
             }
           }
+          // }
           return watcher.value;
         }
       });

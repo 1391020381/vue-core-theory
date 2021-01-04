@@ -56,7 +56,12 @@ class Watcher {
   }
 
   update () {
-    queueWatcher(this);
+    if (this.lazy) { // 依赖的值更新后，只需要将this.dirty设置为true
+      // 之后获取计算属性的值时会再次执行evaluate来执行this.get()方法
+      this.dirty = true;
+    } else {
+      queueWatcher(this);
+    }
   }
 
   run () {
@@ -64,9 +69,6 @@ class Watcher {
     if (this.user) {
       this.cb.call(this.vm, value, this.value);
       this.value = value;
-    }
-    if (this.lazy) {
-      this.dirty = true;
     }
   }
 }
