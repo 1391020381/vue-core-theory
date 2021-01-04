@@ -82,16 +82,13 @@ const sharedPropertyDefinition = {
   set: noop
 };
 
-// 利用高阶函数来传入额外的参数，并将想要的函数返回
-// 这里要用到每个计算属性watcher，其实可以将它作为参数传过来
 function createComputedGetter (key) {
   return function () {
     const watcher = this._computedWatchers[key];
     if (watcher.dirty) {
-      // 执行key对应的函数，获得值赋值给watcher.value。并且在取值时会为依赖的值收集计算属性watcher
+      // 只有在dirty为true的时候才会重新执行计算属性
       watcher.evaluate();
       if (Dep.target) {
-        // 计算属性会收集它依赖的dep,让dep再收集渲染watcher，用于页面更新
         watcher.depend();
       }
     }
@@ -114,10 +111,8 @@ function initComputed (vm) {
   const watchers = vm._computedWatchers = {};
   for (const key in computed) {
     if (computed.hasOwnProperty(key)) {
-      // 这里用户可能传入一个对象来配置set/get方法
       const userDef = computed[key];
       const getter = typeof userDef === 'function' ? userDef : userDef.get;
-      // 这样之后可以通过vm._computedWatchers来直接访问每个计算属性对应的watcher
       watchers[key] = new Watcher(vm, getter, () => {}, { lazy: true });
       defineComputed(vm, key, userDef);
     }
