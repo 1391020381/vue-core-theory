@@ -65,3 +65,18 @@
       * 针对常见操作进行了优化：
 
 问题：`Vuex`中是如何通过另一个`Vue`实例，来保证数据的响应性的？其内部的逻辑到底是怎样的？
+
+### 计算属性
+
+* computed: { fullName(){ return this.firstName + this.lastName } }
+* `initComputed`
+* 遍历computed中的每一个属性，分别它的`key`在`vm`上定义`get`方法
+* new Watcher(vm,functionFullName() {return this.firstName + this.lastName},() => {},{lazy:true})
+* 内部定义一个标识`dirty`，来判断是否需要更新计算属性对应的值
+* 首次初始化时不会执行`fullName`函数
+* 在页面渲染时，如果页面中用到了`fullName`，会触发`vm.fullName`的取值`get`方法
+* `dirty: true`,重新计算计算属性的值，执行`this.get()`，并且将`dirty`设置为`false`
+* 由于执行了`this.get()`方法，会触发`this.firstName`和`this.lastName`的取值操作，会为其收集计算属性`watcher`
+* 由于在更新依赖时要通知页面更新从而重新计算`fullName`的最新值，所以还要再为`this.firstName`和`this.lastName`再收集渲染`watcher`，此时`Dep`
+  中定义的栈起到了作用，可以通过栈中的前一项来找到渲染`watcher`
+* 在执行计算属性`watcher`的`update`后，要将`dirty: true`，这样会再次取值时重新计算
