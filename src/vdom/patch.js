@@ -58,10 +58,13 @@ export function patch (oldVNode, vNode) {
     return el;
   } else { // 新旧节点都为虚拟节点，要进行dom diff
     if (oldVNode.tag !== vNode.tag) { // 不相等直接替换
-      return replaceChild(oldVNode.el, createElement(vNode));
+      const newEle = createElement(vNode);
+      replaceChild(newEle, oldVNode.el);
+      return newEle;
     }
     if (!oldVNode.tag) { // 文本节点
-      return oldVNode.el.textContent = vNode.text;
+      oldVNode.el.textContent = vNode.text;
+      return oldVNode.el;
     }
     // 元素相同，需要比较子元素
     const el = vNode.el = oldVNode.el;
@@ -84,6 +87,7 @@ export function patch (oldVNode, vNode) {
     if (oldChildren.length && newChildren.length) {
       updateChildren(oldChildren, newChildren, el);
     }
+    return el;
   }
 }
 
