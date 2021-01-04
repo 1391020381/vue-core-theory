@@ -11,6 +11,8 @@ class Watcher {
     this.cb = cb;
     this.options = options;
     this.user = options.user;
+    this.lazy = options.lazy;
+    this.dirty = this.lazy;
     this.deps = [];
     this.depsId = new Set();
     if (typeof exprOrFn === 'function') {
@@ -23,7 +25,7 @@ class Watcher {
         return keys.reduce((memo, cur) => memo[cur], vm);
       };
     }
-    this.value = this.get();
+    this.value = this.lazy ? undefined : this.get();
   }
 
   addDep (dep) {
@@ -36,9 +38,19 @@ class Watcher {
     }
   }
 
+  evaluate () {
+    this.value = this.get();
+    this.dirty = false;
+  }
+
+  // 为watcher中的dep，在收集渲染watcher
+  depend () {
+    this.deps.forEach(dep => dep.depend());
+  }
+
   get () {
     pushTarget(this);
-    const value = this.getter();
+    const value = this.getter.call(this.vm);
     popTarget();
     return value;
   }
@@ -52,6 +64,9 @@ class Watcher {
     if (this.user) {
       this.cb.call(this.vm, value, this.value);
       this.value = value;
+    }
+    if (this.lazy) {
+      this.dirty = true;
     }
   }
 }
@@ -68,7 +83,6 @@ let pending = false;
 //  3. 会调用dep.notify让收集的watcher执行update方法
 //  4. 将刷新队列的操作放入异步队列中，等待主线程的代码执行完毕
 function flushSchedulerQueue () {
-  console.log('flushSchedulerQueue');
   queue.forEach(watcher => {
     watcher.run();
     if (watcher.options.render) { // 在更新之后执行对应的回调

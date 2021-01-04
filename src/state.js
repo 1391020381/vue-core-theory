@@ -2,6 +2,7 @@ import { observe } from './observer';
 import { proxy } from './shared/utils';
 import Watcher from './observer/watcher';
 import { nextTick } from './shared/next-tick';
+import Dep from './observer/dep';
 
 function initState (vm) {
   const options = vm.$options;
@@ -16,6 +17,9 @@ function initState (vm) {
   }
   if (options.watch) {
     initWatch(vm);
+  }
+  if (options.computed) {
+    initComputed(vm);
   }
 }
 
@@ -71,8 +75,26 @@ function initWatch (vm) {
   }
 }
 
-function initComputed () {
-
+function initComputed (vm) {
+  const { computed } = vm.$options;
+  for (const key in computed) {
+    if (computed.hasOwnProperty(key)) {
+      const watcher = new Watcher(vm, computed[key], () => {}, { lazy: true });
+      Object.defineProperty(vm, key, {
+        get () {
+          // Dep.target为渲染watcher,在渲染时生成虚拟节点时会使用render函数通过with(this)从实例里取值
+          // 这样会触发get方法，此时计算属性watcher会去求值，会触发依赖属性的get方法，收集计算属性watcher
+          if (Dep.target) { // 为什么要判断Dep.target
+            if (watcher.dirty) {
+              watcher.evaluate();
+              watcher.depend();
+            }
+          }
+          return watcher.value;
+        }
+      });
+    }
+  }
 }
 
 export function stateMixin (Vue) {
