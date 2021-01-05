@@ -1,5 +1,7 @@
 ## 模板编译
 
+> 源码地址：[传送门](https://github.com/wangkaiwd/vue-core-theory/blob/text-compile/src/compiler/index.js)
+
 > [Vue Template Explorer](https://template-explorer.vuejs.org/)
 
 在数据劫持中，我们完成了`Vue`中`data`选项中数据的初始操作。这之后需要将`html`字符串编译为`render`函数，其核心逻辑如下：
