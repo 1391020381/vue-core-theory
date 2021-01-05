@@ -22,3 +22,16 @@ export function proxy (target, key, source) {
 export function noop () {
 
 }
+
+function makeMap (str) {
+  const tags = str.split(',');
+  const map = tags.reduce((memo, tag) => {
+    memo[tag] = true;
+    return memo;
+  }, {});
+  return function (key) {
+    return map[key];
+  };
+}
+
+export const isReservedTag = makeMap('a,div,span,p,input,textarea,ul,li,button');
