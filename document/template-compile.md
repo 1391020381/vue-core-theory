@@ -2,8 +2,6 @@
 
 > 源码地址：[传送门](https://github.com/wangkaiwd/vue-core-theory/blob/text-compile/src/compiler/index.js)
 
-> [Vue Template Explorer](https://template-explorer.vuejs.org/)
-
 在数据劫持中，我们完成了`Vue`中`data`选项中数据的初始操作。这之后需要将`html`字符串编译为`render`函数，其核心逻辑如下：
 
 有`render`函数的情况下会直接使用传入的`render`函数，而在没有`render`函数的情况下，需要将`template`编译为`render`函数。其具体逻辑如下：
@@ -305,6 +303,8 @@ export function parseHtml (html) {
 到这里我们拿到了一个树形结构对象`ast`，接下来要根据这个树形结构，递归生成代码字符串
 
 ### 生成代码字符串
+
+> [Vue代码生成可视化编辑器](https://template-explorer.vuejs.org/)
 
 先看下面一段`html`字符串生成的代码字符串是什么样子的：
 
