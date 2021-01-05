@@ -461,7 +461,7 @@ function genText (text) {
 * `match.index`: 匹配到的字符串在原字符串中的索引
 
 其匹配逻辑如下图所示：
-![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210105160425.png)
+![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210105171055.png)
 
 在上边的逻辑完成后，会得到最终的`code`，下面需要将`code`处理为`render`函数。
 
