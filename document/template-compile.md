@@ -301,3 +301,191 @@ export function parseHtml (html) {
 到这里我们拿到了一个树形结构对象`ast`，接下来要根据这个树形结构，递归生成代码字符串
 
 ### 生成代码字符串
+
+先看下下面一段`html`字符串生成的代码字符串是什么样子的：
+
+```html
+
+<body>
+<div id="app">
+  hh
+  <div id="aa" style="color: red;">hello {{name}} world</div>
+</div>
+<script>
+  const vm = new Vue({
+    el: '#app',
+    data () {
+      return {
+        name: 'zs',
+      };
+    },
+  });
+</script>
+</body>
+```
+
+最终得到的代码字符串如下：
+
+```javascript
+const code = `_c("div",{id:"app"},_v("hh"),_c("div"),{id:"aa",style:{color: "red"}},_v("hello"+_s(name)+"world"))`
+```
+
+最终会将上述代码通过`new Function(with(this) { return ${code}})`转换为`render`函数，而在`render`函数执行时通过`call`来将`this`指向`vm`
+。所以代码字符串中的函数和变量都会从`vm`上进行查找。
+
+下面是代码字符串中用到的函数的含义：
+
+* `_c` : 创建虚拟元素节点`createVElement`
+* `_v` : 创建虚拟文本节点`createTextVNode`
+* `_s` : `stringify`对传入的值执行`JSON.stringify`
+
+接下来开始介绍如何将`ast`树形对象处理为上边介绍到的`code`。
+
+创建`src/compiler/generate.js`文件，需要解析的内容如下：
+
+* 标签
+* 属性
+* 递归处理`children`
+* 文本
+
+标签处理比较简单，直接获取`ast.tag`即可。
+
+属性在代码字符串中是以对象的格式存在，而在`ast`中是数组的形式。这里需要遍历数组，并将其`name`和`value`处理为对象的键和值。需要注意`style`属性要特殊处理
+
+```javascript
+function genAttrs (attrs) {
+  if (attrs.length === 0) {
+    return 'undefined';
+  }
+  let str = '';
+  for (let i = 0; i < attrs.length; i++) {
+    const attr = attrs[i];
+    if (attr.name === 'style') {
+      const styleValues = attr.value.split(',');
+      // 可以对对象使用JSON.stringify来进行处理
+      attr.value = styleValues.reduce((obj, item) => {
+        const [key, val] = item.split(':');
+        obj[key] = val;
+        return obj;
+      }, {});
+    }
+    str += `${attr.name}:${JSON.stringify(attr.value)}`;
+    if (i !== attrs.length - 1) {
+      str += ',';
+    }
+  }
+  return `{${str}}`;
+}
+
+// some code ...
+
+export function generate (el) {
+  const children = genChildren(el.children);
+  return `_c("${el.tag}", ${genAttrs(el.attrs)}${children ? ',' + children : ''})`;
+}
+```
+
+在用`,`拼接对象时，也可以先将每一部分放到数组中，通过数组的`join`方法用`,`来拼接。
+
+标签和属性之后的参数都为孩子节点，要以函数参数的形式用`,`进行拼接，最终在生成虚拟节点时会通过`...`扩展运算符将其处理为一个数组：
+
+```javascript
+function gen (child) {
+  if (child.type === 1) {
+    // 将元素处理为代码字符串并返回
+    return generate(child);
+  } else if (child.type === 3) {
+    return genText(child.text);
+  }
+}
+
+// 将children处理为代码字符串并返回
+function genChildren (children) { // 将children用','拼接起来
+  const result = [];
+  for (let i = 0; i < children.length; i++) {
+    const child = children[i];
+    // 将生成结果放到数组中
+    result.push(gen(child));
+  }
+  return result.join(',');
+}
+
+export function generate (el) {
+  const children = genChildren(el.children);
+  return `_c("${el.tag}", ${genAttrs(el.attrs)}${children ? ',' + children : ''})`;
+}
+```
+
+在生成孩子节点时，需要判断每一项的类型，如果是元素会继续执行`generate`方法来生成元素对应的代码字符串，如果是文本，需要通过`genText`方法来进行处理：
+
+```javascript
+const defaultTagRE = /\{\{((?:.|\r?\n)+?)\}\}/g;
+
+function genText (text) {
+  if (!defaultTagRE.test(text)) {
+    return `_v(${JSON.stringify(text)})`;
+  }
+  // <div id="aa">hello {{name}} xx{{msg}} hh <span style="color: red" class="bb">world</span></div>
+  const tokens = [];
+  let lastIndex = defaultTagRE.lastIndex = 0;
+  let match;
+  while (match = defaultTagRE.exec(text)) {
+    // 这里的先后顺序如何确定？ 通过match.index和lastIndex的大小关系
+    // match.index === lastIndex时，说明此时是{{}}中的内容，前边没有字符串
+    if (match.index > lastIndex) {
+      tokens.push(JSON.stringify(text.slice(lastIndex, match.index)));
+    }
+    // 然后将括号内的元素放到数组中
+    tokens.push(`_s(${match[1].trim()})`);
+    lastIndex = defaultTagRE.lastIndex;
+  }
+  if (lastIndex < text.length) {
+    tokens.push(JSON.stringify(text.slice(lastIndex)));
+  }
+  return `_v(${tokens.join('+')})`;
+}
+```
+
+`genText`中会利用`lastIndex`以及`match.index`来循环处理每一段文本。由于这则添加了`g`标识，每次匹配完之后，都会将`lastIndex`移动到下一次开始匹配的索引。最终匹配完所有的`{{}}`
+文本后，`match=null`并且`lastIndex=0`，终止循环。
+
+在`{{}}`中的文本需要放到`_s()` 中，每段文本都会放到数组`tokens`中，最后将每段文本通过`+`拼接起来，最终在`render`函数执行时，会进行字符串拼接操作，然后展示到页面中。
+
+代码中用到的`lastIndex`和`match.index`的含义分别如下：
+
+* `lastIndex`: 字符串下次开始匹配的位置对应的索引
+* `match.index`: 匹配到的字符串在原字符串中的索引
+
+其匹配逻辑如下图所示：
+![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210105160425.png)
+
+在上边的逻辑完成后，会得到最终的`code`，下面需要将`code`处理为`render`函数。
+
+### 生成`render`函数
+
+在`js`中，`new Function`可以通过字符串来创建一个函数。利用我们之前生成的字符串再结合`new Function`便可以得到一个函数。
+
+而字符串中的变量最终会到`vm`实例上进行取值，`with`可以指定变量的作用域，下面是一个简单的例子：
+
+```javascript
+const obj = { a: 1, b: 2 }
+with (obj) {
+  console.log(a) // 1
+  console.log(b) // 2
+}
+```
+
+利用`new Function`和`with`的相关特性，可以得到如下代码：
+
+```javascript
+const render = new Function(`with(this){return ${code}}`)
+```
+
+到这里，我们便完成了`compileToFunctions`函数的功能，实现了文章开始时这行代码的逻辑：
+
+```javascript
+vm.$options.render = compileFunctions(template)
+```
+
+### 结语
+
