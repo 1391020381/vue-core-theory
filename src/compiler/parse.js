@@ -1,8 +1,12 @@
-const attribute = /^\s*([^\s"'<>\/=]+)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/;
 const ncname = `[a-zA-Z_][\\-\\.0-9_a-zA-Z]*`;
 const qnameCapture = `((?:${ncname}\\:)?${ncname})`;
+// 开始标签的开始符号<
 const startTagOpen = new RegExp(`^<${qnameCapture}`);
+// 标签中的属性
+const attribute = /^\s*([^\s"'<>\/=]+)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/;
+// 开始标签的闭合符号>
 const startTagClose = /^\s*(\/?)>/;
+// 结束标签 </xxx>
 const endTag = new RegExp(`^<\\/${qnameCapture}[^>]*>`);
 
 // 要解析的模板：
@@ -83,6 +87,10 @@ export function parseHtml (html) {
     const element = createASTElement(tag, attrs);
     if (!root) {
       root = element;
+    } else {
+      // 记录父子关系
+      currentParent.children.push(element);
+      element.parent = currentParent;
     }
     currentParent = element;
     stack.push(element);
@@ -90,15 +98,8 @@ export function parseHtml (html) {
 
   // 每次处理好前一个，最后将所有元素作为子元素push到root节点中
   function end (tag) { // 在结尾标签匹配时可以确立父子关系
-    // 当匹配到结尾标签时，栈中保存的最后一个元素要出栈
-    const element = stack.pop();
-    // 当匹配到结束标签时，它和栈中的最后一个元素的标签不一样，说明标签书写格式有问题
-
-    // 当栈中的元素为空时，说明处理完了所有元素
-    if (stack.length === 0) {return;}
+    stack.pop();
     currentParent = stack[stack.length - 1];
-    currentParent.children.push(element);
-    element.parent = currentParent;
   }
 
   function char (text) {
@@ -140,6 +141,5 @@ export function parseHtml (html) {
       }
     }
   }
-  console.log('root', root);
   return root;
 }
