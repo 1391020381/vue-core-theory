@@ -18,8 +18,8 @@ export function initGlobalApi (Vue) {
    * @param definition 组件定义
    */
   Vue.component = function (id, definition) {
-    const key = definition.name = definition.name || id;
-    // Vue.extend会返回Vue子类的构造函数
-    this.options.components[key] = Vue.extend(definition);
+    definition.name = definition.name || id;
+    definition = this.options._base.extend(definition);
+    this.options.components[id] = definition;
   };
 }
