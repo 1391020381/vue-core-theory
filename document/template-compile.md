@@ -11,11 +11,11 @@
 1. 获取`template`字符串
 2. 将`template`字符串解析为`ast`抽象语法树
 3. 将`ast`抽象语法树生成代码字符串
-4. 将字符串处理为`render`函数赋值给`vm.$options`
+4. 将字符串处理为`render`函数赋值给`vm.$options.render`
 
 ### 获取`template`字符串
 
-在进行`template`解析之前，会进行一系列的条件处理，来最终得到`template`，其处理逻辑如下：
+在进行`template`解析之前，会进行一系列的条件处理，得到最终的`template`，其处理逻辑如下：
 ![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210105111632.png)
 
 在`src/init.js`中书写如下代码：
@@ -63,7 +63,7 @@ function initMixin (Vue) {
 
 当我们得到最终的`template`后，需要调用`compileToFunctions`将`template`转换为`render`函数。在`compileToFunctions`中就是模板编译的主要逻辑。
 
-创建`src/compiler/index.js`文件，其逻辑如下：
+创建`src/compiler/index.js`文件，其代码如下：
 
 ```javascript
 export function compileToFunctions (template) {
@@ -80,7 +80,7 @@ export function compileToFunctions (template) {
 
 当拿到对应的`html`字符串后，需要通过正则来将其解析为`ast`抽象语法树。简单来说就是将`html`处理为一个树形结构，可以很好的表示每个节点的父子关系。
 
-下面是一段`html`，以及其表示它的`ast`:
+下面是一段`html`，以及表示它的`ast`:
 
 ```html
 
