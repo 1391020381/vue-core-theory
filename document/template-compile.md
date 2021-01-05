@@ -267,8 +267,37 @@ export function parseHtml (html) {
 ```
 
 最后来处理结束标签。匹配到结束标签时要将`stack`中最后一个元素出栈，更新`currentParent`，直到`stack`中的元素为空时，就得到了完整的`ast`抽象语法树：
-```javascript
 
+```javascript
+export function parseHtml (html) {
+  // 树 + 栈
+  let root, currentParent;
+  const stack = [];
+
+  // 每次处理好前一个，最后将所有元素作为子元素push到root节点中
+  function end (tag) { // 在结尾标签匹配时可以确立父子关系
+    stack.pop();
+    currentParent = stack[stack.length - 1];
+  }
+
+  while (html) {
+    // 开始和结束标签都会以 < 开头
+    const textEnd = html.indexOf('<');
+    if (textEnd === 0) {
+      // some code ...
+      // 处理结尾标签
+      const endTagMatch = html.match(endTag);
+      if (endTagMatch) {
+        end(endTagMatch[1]);
+        advance(endTagMatch[0].length);
+      }
+    }
+    // some code ...  
+  }
+  return root;
+}
 ```
+
+到这里我们拿到了一个树形结构对象`ast`，接下来要根据这个树形结构，递归生成代码字符串
 
 ### 生成代码字符串
