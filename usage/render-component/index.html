@@ -21,6 +21,9 @@
   Vue.component('my-button', {
     template: '<button>my button</button>'
   });
+  Vue.component('aa', {
+    template: '<button>global aa</button>'
+  });
   const vm = new Vue({
     el: '#app',
     components: {
@@ -36,6 +39,22 @@
   // 1. Vue.component
   // 2. Vue.extend
   // 3. 组件初始化， 1. new Vue.extend(options) 2. vm.$mount()
+
+  // 创建组件虚拟节点：
+  // 1. 在创建虚拟元素节点时，通过标签过滤出原生标签外的自定义标签
+  // 2. 创建组件虚拟节点：通过vm.$options._base[tag] 拿到对应的组件定义
+  // 3. 组件定义可能是对象，也能是Vue的子类，需要通过Vue.extend将其统一处理为Vue的子类，并在props中设置它的初始化方法
+  // 4. 组件虚拟节点没有children,多了一个componentOptions属性
+  // 将组件渲染到页面：
+  // 1. 生成真实dom时，会执行子组件的初始化操作，实例化子组件构造函数，最终将组件实例的$el属性返回
+  // 2. createElement会将子组件对应的元素通过appendChild挂载到父组件中
+
+  // 问题记录：
+  // 1. 如何理解创建一个脱离文本的组件？
+  //    const component = new Vue.extend(options);
+  //    component.$mount();
+  //    document.body.appendChild(vm.$el)
+  // 2. 组件是如何挂载到页面上的？
 </script>
 </body>
 </html>
