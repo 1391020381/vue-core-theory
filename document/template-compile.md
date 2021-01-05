@@ -223,15 +223,15 @@ function start (tag, attrs) {
 ```
 
 ![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210105145913.png)
-通过对象的引用关系，最终便能得到一个属性结构对象`root`。
+通过对象的引用关系，最终便能得到一个树形结构对象`root`。
 
-解析完开始标签后，如果剩余的文本起始字符串可能为：
+解析完开始标签后，剩余的文本起始字符串可能为：
 
 * 下一个开始标签
 * 文本内容
 * 结束标签
 
-如果是仍然是开始标签，会重复上述逻辑。如果是文本内容，`<`字符的索引会大于0，只需要将`[0, textEnd)`之间的文本截取出来放到父节点的`children`中即可：
+如果仍然是开始标签，会重复上述逻辑。如果是文本内容，`<`字符的索引会大于0，只需要将`[0, textEnd)`之间的文本截取出来放到父节点的`children`中即可：
 
 ```javascript
 export function parseHtml (html) {
@@ -268,7 +268,9 @@ export function parseHtml (html) {
 }
 ```
 
-最后来处理结束标签。匹配到结束标签时要将`stack`中最后一个元素出栈，更新`currentParent`，直到`stack`中的元素为空时，就得到了完整的`ast`抽象语法树：
+最后来处理结束标签。
+
+匹配到结束标签时要将`stack`中最后一个元素出栈，更新`currentParent`，直到`stack`中的元素为空时。就得到了完整的`ast`抽象语法树：
 
 ```javascript
 export function parseHtml (html) {
@@ -304,7 +306,7 @@ export function parseHtml (html) {
 
 ### 生成代码字符串
 
-先看下下面一段`html`字符串生成的代码字符串是什么样子的：
+先看下面一段`html`字符串生成的代码字符串是什么样子的：
 
 ```html
 
@@ -341,7 +343,7 @@ const code = `_c("div",{id:"app"},_v("hh"),_c("div"),{id:"aa",style:{color: "red
 * `_v` : 创建虚拟文本节点`createTextVNode`
 * `_s` : `stringify`对传入的值执行`JSON.stringify`
 
-接下来开始介绍如何将`ast`树形对象处理为上边介绍到的`code`。
+接下来开始介绍如何将`ast`树形对象处理为上边介绍到`code`。
 
 创建`src/compiler/generate.js`文件，需要解析的内容如下：
 
@@ -387,7 +389,7 @@ export function generate (el) {
 }
 ```
 
-在用`,`拼接对象时，也可以先将每一部分放到数组中，通过数组的`join`方法用`,`来拼接。
+在用`,`拼接对象时，也可以先将每一部分放到数组中，通过数组的`join`方法用`,`来拼接为字符串。
 
 标签和属性之后的参数都为孩子节点，要以函数参数的形式用`,`进行拼接，最终在生成虚拟节点时会通过`...`扩展运算符将其处理为一个数组：
 
@@ -448,10 +450,10 @@ function genText (text) {
 }
 ```
 
-`genText`中会利用`lastIndex`以及`match.index`来循环处理每一段文本。由于这则添加了`g`标识，每次匹配完之后，都会将`lastIndex`移动到下一次开始匹配的索引。最终匹配完所有的`{{}}`
+`genText`中会利用`lastIndex`以及`match.index`来循环处理每一段文本。由于正则添加了`g`标识，每次匹配完之后，都会将`lastIndex`移动到下一次开始匹配的位置。最终匹配完所有的`{{}}`
 文本后，`match=null`并且`lastIndex=0`，终止循环。
 
-在`{{}}`中的文本需要放到`_s()` 中，每段文本都会放到数组`tokens`中，最后将每段文本通过`+`拼接起来，最终在`render`函数执行时，会进行字符串拼接操作，然后展示到页面中。
+在`{{}}`中的文本需要放到`_s()` 中，每段文本都会放到数组`tokens`中，最后将每段文本通过`+`拼接起来。最终在`render`函数执行时，会进行字符串拼接操作，然后展示到页面中。
 
 代码中用到的`lastIndex`和`match.index`的含义分别如下：
 
