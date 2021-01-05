@@ -2,10 +2,6 @@
 
 const strategies = {};
 
-function defaultStrategy (parentVal, childVal) {
-  return childVal === undefined ? parentVal : childVal;
-}
-
 const LIFECYCLE_HOOKS = [
   'beforeCreate',
   'created',
@@ -16,6 +12,11 @@ const LIFECYCLE_HOOKS = [
   'beforeDestroy',
   'destroyed'
 ];
+
+function defaultStrategy (parentVal, childVal) {
+  return childVal === undefined ? parentVal : childVal;
+
+}
 
 function mergeHook (parentVal, childVal) {
   if (parentVal) {
@@ -28,6 +29,16 @@ function mergeHook (parentVal, childVal) {
     return [childVal];
   }
 }
+
+strategies.components = function (parentVal, childVal) {
+  const result = Object.create(parentVal);
+  for (const key in childVal) {
+    if (childVal.hasOwnProperty(key)) {
+      result[key] = childVal[key];
+    }
+  }
+  return result;
+};
 
 LIFECYCLE_HOOKS.forEach(hook => {
   strategies[hook] = mergeHook;
