@@ -18,7 +18,8 @@
   },
   "homepage": "https://github.com/wangkaiwd/vue-core-theory#readme",
   "dependencies": {
-    "rollup": "^2.35.1"
+    "rollup": "^2.35.1",
+    "vue": "^2.6.12"
   },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^11.0.1"

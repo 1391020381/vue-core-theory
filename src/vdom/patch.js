@@ -32,7 +32,7 @@ function updateProperties (vNode, oldProps = {}) { // 老节点和新节点的�
 function createComponent (vNode) {
   let i = vNode.props;
   if ((i = i.hook) && (i = i.init)) {
-    i(vNode);
+    i(vNode); // 初始化子组件，new SubComponent()
   }
   if (vNode.componentInstance) {
     return true;

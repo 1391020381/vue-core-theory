@@ -80,3 +80,15 @@
 * 由于在更新依赖时要通知页面更新从而重新计算`fullName`的最新值，所以还要再为`this.firstName`和`this.lastName`再收集渲染`watcher`，此时`Dep`
   中定义的栈起到了作用，可以通过栈中的前一项来找到渲染`watcher`
 * 在执行计算属性`watcher`的`update`后，要将`dirty: true`，这样会再次取值时重新计算
+
+### 渲染子组件
+
+问题记录：
+
+1. 如何理解创建一个脱离文本的组件？
+   ```js
+   const component = new Vue.extend(options); 
+   component.$mount(); 
+   document.body.appendChild(vm.$el)
+   ```
+2. 组件是如何挂载到页面上的？
