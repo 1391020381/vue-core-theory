@@ -19,7 +19,7 @@ export function mountComponent (vm) {
 }
 ```
 
-接下来看看`vm._render()`和`vm._update()`中到底做了什么
+下面详细介绍`vm._render()`和`vm._update()`中到底做了什么
 
 ### 生成虚拟节点
 
@@ -64,7 +64,7 @@ const vNode = {
 }
 ```
 
-在`Vue.prototype._render`函数中，通过执行文本编译后生成的`render`方法，得到了虚拟节点：
+在`Vue.prototype._render`函数中，通过执行文本编译后生成的`render`方法，会得到虚拟节点：
 
 ```javascript
 // src/vdom/index.js
@@ -188,18 +188,14 @@ function createElement (vNode) {
 }
 ```
 
-`createElement`会返回生成的真实`DOM`元素`el`返回，并且对子元素会再次调用`createElement`来继续生成子元素，将生成的真实元素通过`appendChild`方法插入到父节点中。
+`createElement`会生成的真实`DOM`元素`el`并返回，内部会对子虚拟节点再次调用`createElement`来继续生成真实元素，然后将生成的真实元素通过`appendChild`方法插入到父节点中。
 
 执行`createElement`最后得到的`el`是将所有子节点都插入到内部的元素，但其实`el`此时还是脱离真实`DOM`存在的，最后将它插入到真实`DOM`中便完成了整个真实节点的渲染。
 
 下面是其执行逻辑示意图：
-![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210106164955.png)
+![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210106174239.png)
 
 ### 总结
-
-到目前为止，我们已经实现了`Vue`组件初渲染的整个过程，下面用一张图来总结一下：
-
-![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210106172803.png)
 
 `Vue`的组件挂载`vm.$mount(el)`过程如下：
 
@@ -208,3 +204,6 @@ function createElement (vNode) {
 3. 将虚拟节点创建为真实节点，并递归的插入到页面中
 4. 使用真实节点替换之前老的节点
 
+到目前为止，我们已经实现了`Vue`组件初渲染的整个过程，下面用一张图来总结一下：
+
+![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210106172803.png)
