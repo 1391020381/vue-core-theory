@@ -1,5 +1,7 @@
 ## 组件初渲染
 
+> 源码地址: [传送门](https://github.com/wangkaiwd/vue-core-theory/blob/code-to-vdom-to-dom/src/init.js#L40)
+
 在`Vue`进行文本编译之后，会得到代码字符串生成的`render`函数。本文会基于`render`函数介绍以下内容：
 
 * 执行`render`函数生成虚拟节点
@@ -199,7 +201,7 @@ function createElement (vNode) {
 
 `Vue`的组件挂载`vm.$mount(el)`过程如下：
 
-1. 将`temlate`编译为`render`函数
+1. 将`template`编译为`render`函数
 2. 使用`render`函数生成虚拟节点，函数中需要的变量和方法会去`vm`的自身和原型链中查找
 3. 将虚拟节点创建为真实节点，并递归的插入到页面中
 4. 使用真实节点替换之前老的节点
