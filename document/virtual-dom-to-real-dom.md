@@ -198,3 +198,13 @@ function createElement (vNode) {
 ### 总结
 
 到目前为止，我们已经实现了`Vue`组件初渲染的整个过程，下面用一张图来总结一下：
+
+![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210106172803.png)
+
+`Vue`的组件挂载`vm.$mount(el)`过程如下：
+
+1. 将`temlate`编译为`render`函数
+2. 使用`render`函数生成虚拟节点，函数中需要的变量和方法会去`vm`的自身和原型链中查找
+3. 将虚拟节点创建为真实节点，并递归的插入到页面中
+4. 使用真实节点替换之前老的节点
+
