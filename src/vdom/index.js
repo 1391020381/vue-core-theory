@@ -11,10 +11,32 @@ function vNode (tag, props, key, children, text, componentOptions) {
   };
 }
 
+function createVComponent (vm, tag, props, key, children) {
+  const baseCtor = vm.$options._base;
+  // 在生成父虚拟节点的过程中，遇到了子组件的自定义标签。它的定义放到了父组件的components中，所有通过父组件的$options来进行获取
+  // 这里包括全局组件和自定义组件，内部通过原型链进行了合并
+  let Ctor = vm.$options.components[tag];
+  if (typeof Ctor === 'object') {
+    Ctor = baseCtor.extend(Ctor);
+  }
+  props.hook = { // 在渲染真实节点时会调用init钩子函数
+    init (vNode) {
+      const child = vNode.componentInstance = new Ctor();
+      child.$mount();
+    }
+  };
+  return vNode(`vue-component-${Ctor.id}-${tag}`, props, key, undefined, undefined, { Ctor, children });
+}
+
 function createVElement (tag, props = {}, ...children) {
+  const vm = this;
   const { key } = props;
   delete props.key;
-  return vNode(tag, props, key, children);
+  if (isReservedTag(tag)) {
+    return vNode(tag, props, key, children);
+  } else {
+    return createVComponent(vm, tag, props, key, children);
+  }
 }
 
 function createTextVNode (text) {

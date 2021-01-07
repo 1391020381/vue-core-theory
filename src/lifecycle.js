@@ -9,7 +9,7 @@ export function lifecycleMixin (Vue) {
     if (!preVNode) {
       vm.$el = patch(vm.$el, vNode);
     } else {
-      patch(preVNode, vNode);
+      vm.$el = patch(preVNode, vNode);
     }
   };
 }
