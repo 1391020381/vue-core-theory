@@ -30,10 +30,8 @@ function updateProperties (vNode, oldProps = {}) { // 老节点和新节点的�
 }
 
 function createComponent (vNode) {
-  let i = vNode.props;
-  if ((i = i.hook) && (i = i.init)) {
-    i(vNode); // 初始化子组件，new SubComponent()
-  }
+  let init = vNode.props?.hook?.init;
+  init?.(vNode);
   if (vNode.componentInstance) {
     return true;
   }
@@ -62,7 +60,7 @@ function replaceChild (oldEl, newEl) {
 }
 
 export function patch (oldVNode, vNode) {
-  if (!oldVNode) {
+  if (!oldVNode) { // 如果没有老节点，直接将新节点创建的dom返回，并添加到vm.$el上。最后用户可以手动将其挂载到页面中
     return createElement(vNode);
   }
   if (oldVNode.nodeType) { // 旧的节点为真实节点
