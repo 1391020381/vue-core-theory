@@ -30,19 +30,19 @@ function mergeHook (parentVal, childVal) {
   }
 }
 
+LIFECYCLE_HOOKS.forEach(hook => {
+  strategies[hook] = mergeHook;
+});
+
 strategies.components = function (parentVal, childVal) {
-  const result = Object.create(parentVal);
-  for (const key in childVal) {
+  const result = Object.create(parentVal); // 合并后的原型链为parentVal
+  for (const key in childVal) { // childVal中的值都设置为自身私有属性，会优先获取
     if (childVal.hasOwnProperty(key)) {
       result[key] = childVal[key];
     }
   }
   return result;
 };
-
-LIFECYCLE_HOOKS.forEach(hook => {
-  strategies[hook] = mergeHook;
-});
 
 function mergeOptions (parent, child) { // 将子选项和父选项合并
   const options = {};

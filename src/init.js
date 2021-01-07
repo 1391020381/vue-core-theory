@@ -18,8 +18,9 @@ function query (el) {
 function initMixin (Vue) {
   Vue.prototype._init = function (options = {}) {
     const vm = this;
-    console.log('options', vm.constructor.options, options);
+    console.log(vm.constructor.options, options);
     vm.$options = mergeOptions(vm.constructor.options, options);
+    console.log(vm.$options);
     callHook(vm, 'beforeCreate');
     initState(vm);
     callHook(vm, 'created');

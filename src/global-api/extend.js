@@ -1,16 +1,15 @@
 import mergeOptions from '../shared/merge-options';
 
 export function initExtend (Vue) {
-  let cid = 0; // 每次创建都有的唯一id
+  // 创建一个子类来继承父类
   Vue.extend = function (extendOptions) {
     const Super = this;
-    const Sub = function VueComponent (options) {
-      // 会通过原型链调用Super类原型上的_init方法
-      this._init(options);
+    const Sub = function VueComponent () {
+      // 会根据原型链进行查找，找到Super.prototype.init方法
+      this._init();
     };
-    Sub.cid = cid++;
-    // 继承Vue的原型方法
     Sub.prototype = Object.create(Super.prototype);
+    // 此时prototype为一个对象，会失去原来的值
     Sub.prototype.constructor = Sub;
     Sub.options = mergeOptions(Super.options, extendOptions);
     Sub.component = Super.component;
