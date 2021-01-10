@@ -218,11 +218,11 @@ export function callHook (vm, hook) {
 ![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210110214909.png)
 ![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210110214756.png)
 
-此时，用户在使用时传入的`beforeCreated,created,beforeMounted,Mounted`钩子函数就可以正确执行了。
+此时，用户在使用时传入的`beforeCreate,created,beforeMount,Mounted`钩子函数就可以正确执行了。
 
-* `beforeCreated`：在组件初始化状态`initState`之前执行，此时不能访问`props,methods,data,computed`等实例上的属性
+* `beforeCreate`：在组件初始化状态`initState`之前执行，此时不能访问`props,methods,data,computed`等实例上的属性
 * `created`：组件初始化状态后执行，此时`props,methods,data`等选项已经初始化完毕，可以通过实例来直接访问
-* `beforeMounted`: 组件过载之前执行
+* `beforeMount`: 组件过载之前执行
 * `mounted`: 组件挂载之后执行，即使用实例上最新的`data`生成虚拟`DOM`,然后将虚拟`DOM`挂载到真实`DOM`之后执行。
 
 ### 结语
