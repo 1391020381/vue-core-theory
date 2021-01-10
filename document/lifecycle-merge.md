@@ -1,5 +1,7 @@
 ## 生命周期
 
+> 源码地址：[传送门](https://github.com/wangkaiwd/vue-core-theory/blob/lifecycle/src/global-api/index.js)
+
 `Vue`为用户提供了许多生命周期钩子函数，可以让用户在组件运行的不同阶段书写自己的逻辑。
 
 那么`Vue`内部到底是如何处理生命周期函数的呢？`Vue`的生命周期究竟是在代码运行的哪个阶段执行呢？本文将实现`Vue`生命周期相关代码的核心逻辑，从源码层面来理解生命周期。
@@ -9,7 +11,7 @@
 在介绍生命周期之前，我们先来看下`Vue.mixin`。
 
 `Vue.mixin`是`Vue`的全局混合器，它影响`Vue`创建的每一个实例，会将`mixin`
-中传入的配置项与组件实例化时的配置项按照一定规则进行合并。对于生命周期钩子函数，相同名字的生命周期将会合并到一个数组中，混合器中的钩子函数将会先于组件中的钩子函数放入到数组中。在特定时机时，从做到右执行数组中的每一个钩子函数。
+中传入的配置项与组件实例化时的配置项按照一定规则进行合并。对于生命周期钩子函数，相同名字的生命周期将会合并到一个数组中，混合器中的钩子函数将会先于组件中的钩子函数放入到数组中。在特定时机时，从左到右执行数组中的每一个钩子函数。
 
 ```html
 
@@ -154,10 +156,10 @@ function mergeOptions (parent, child) { // 将子选项和父选项合并
 export default mergeOptions;
 ```
 
-对于不同的选项，`Vue`会采取不同的合并策略。也就是为`strategies`添加`Vue`的各个选项作为`key`，其对应的合并逻辑是一个函数，为`strategies[key]`的值。如果没有对应的`key`
+对于不同的选项，`Vue`会采取不同的合并策略。也就是为`strategies`添加`Vue`的各个选项作为`key`，其对应的合并逻辑是一个函数，为`strategies[key]`的值。如果没有对应`key`
 的话，会采用默认的合并策略`defaultStrategy`来处理默认的合并逻辑。
 
-这样可以让我们不用再用`if else`来不停的进行判断，使代码看上去更加简洁。并且在之后如果需要添加新的合并策略时，只需要添加类似如下代码即可，更易于维护:
+这样可以让我们不用再用`if else`来不停为每一个选项进行判断，使代码更加简洁。并且在之后如果需要添加新的合并策略时，只需要添加类似如下代码即可，更易于维护:
 
 ```javascript
 function mergeXXX (parentVal, childVal) {
@@ -217,6 +219,11 @@ export function callHook (vm, hook) {
 ![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210110214756.png)
 
 此时，用户在使用时传入的`beforeCreated,created,beforeMounted,Mounted`钩子函数就可以正确执行了。
+
+* `beforeCreated`：在组件初始化状态`initState`之前执行，此时不能访问`props,methods,data,computed`等实例上的属性
+* `created`：组件初始化状态后执行，此时`props,methods,data`等选项已经初始化完毕，可以通过实例来直接访问
+* `beforeMounted`: 组件过载之前执行
+* `mounted`: 组件挂载之后执行，即使用实例上最新的`data`生成虚拟`DOM`,然后将虚拟`DOM`挂载到真实`DOM`之后执行。
 
 ### 结语
 
