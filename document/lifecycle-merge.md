@@ -93,4 +93,101 @@ function initMixin (Vue) {
 
 ### 生命周期选项合并
 
+`mergeOptions`函数完成了组件中选项合并的逻辑:
+
+```javascript
+const strategies = {};
+
+function defaultStrategy (parentVal, childVal) {
+  return childVal === undefined ? parentVal : childVal;
+}
+
+const LIFECYCLE_HOOKS = [
+  'beforeCreate',
+  'created',
+  'beforeMount',
+  'mounted',
+  'beforeUpdate',
+  'updated',
+  'beforeDestroy',
+  'destroyed'
+];
+
+function mergeHook (parentVal, childVal) {
+  if (parentVal) {
+    if (childVal) {
+      // concat可以拼接值和数组，但是相对于push来说，会返回拼接后新数组，不会改变原数组
+      return parentVal.concat(childVal);
+    }
+    return parentVal;
+  } else {
+    return [childVal];
+  }
+}
+
+LIFECYCLE_HOOKS.forEach(hook => {
+  strategies[hook] = mergeHook;
+});
+
+function mergeOptions (parent, child) { // 将子选项和父选项合并
+  const options = {};
+
+  function mergeField (key) {
+    const strategy = strategies[key] || defaultStrategy;
+    options[key] = strategy(parent[key], child[key]);
+  }
+
+  for (const key in parent) {
+    if (parent.hasOwnProperty(key)) {
+      mergeField(key);
+    }
+  }
+  for (const key in child) {
+    if (child.hasOwnProperty(key) && !parent.hasOwnProperty(key)) {
+      mergeField(key);
+    }
+  }
+
+  return options;
+}
+
+export default mergeOptions;
+```
+
+对于不同的选项，`Vue`会采取不同的合并策略。也就是为`strategies`添加`Vue`的各个选项作为`key`，其对应的合并逻辑是一个函数，为`strategies[key]`的值。如果没有对应的`key`
+的话，会采用默认的合并策略`defaultStrategy`来处理默认的合并逻辑。
+
+这样可以让我们不用再用`if else`来不停的进行判断，使代码看上去更加简洁。并且在之后如果需要添加新的合并策略时，只需要添加类似如下代码即可，更易于维护:
+
+```javascript
+function mergeXXX (parentVal, childVal) {
+  return result
+}
+
+strategies[xxx] = mergeXXX
+```
+
+对于生命周期，我们会将每个钩子函数都通过`mergeHook`合并为一个数组：
+
+```javascript
+function mergeHook (parentVal, childVal) {
+  if (parentVal) {
+    if (childVal) {
+      // concat可以拼接值和数组，但是相对于push来说，会返回拼接后新数组，不会改变原数组
+      return parentVal.concat(childVal);
+    }
+    return parentVal;
+  } else {
+    return [childVal];
+  }
+}
+```
+
+在`Vue.mixin`中提到例子的合并结果如下：
+![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210110180950.png)
+
+现在我们已经成功将生命周期处理成了数组，接下来便到了执行数组中的所有钩子函数的逻辑了。
+
 ### 调用生命周期函数
+
+### 结语
