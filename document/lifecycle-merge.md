@@ -190,4 +190,32 @@ function mergeHook (parentVal, childVal) {
 
 ### 调用生命周期函数
 
+完成上述代码后，我们已经成功将所有合并后的生命周期放到了`vm.$options`中对应的生命周期数组中：
+
+```javascript
+vm.$options = {
+  created: [f1, f2, f3],
+  mounted: [f4, f5, f6]
+  // ...
+}
+```
+
+想要执行某个生命周期函数，可以用它的名字从`vm.$options`找到其对应的函数执行。为了方便生命周期的调用，封装了一个`callHook`函数来帮我们做这些操作：
+
+```javascript
+// src/lifecycle.js
+export function callHook (vm, hook) {
+  const handlers = vm.$options[hook];
+  if (handlers) {
+    handlers.forEach(handler => handler.call(vm));
+  }
+}
+```
+
+对于目前我们已经完成的代码，可以在如下位置添加生命周期钩子函数的调用：
+![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210110214909.png)
+![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210110214756.png)
+
+此时，用户在使用时传入的`beforeCreated,created,beforeMounted,Mounted`钩子函数就可以正确执行了。
+
 ### 结语

@@ -19,7 +19,6 @@ function initMixin (Vue) {
   Vue.prototype._init = function (options) {
     const vm = this;
     vm.$options = mergeOptions(vm.constructor.options, options);
-    console.log('options', vm.$options);
     callHook(vm, 'beforeCreate');
     initState(vm);
     callHook(vm, 'created');
