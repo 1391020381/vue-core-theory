@@ -164,7 +164,7 @@ export function mountComponent (vm) {
 ```
 
 当`data`选项中的值发生更新后，会通过`dep.notify`来调用`watcher`的`update`，而`watcher`的`update`方法会调用`exprOrFn`即我们之前传入的`updateComponent`
-方法，从而更新视图。
+方法，从而更新视图。  
 ![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210111164529.png)
 
 ### 依赖收集
@@ -173,13 +173,13 @@ export function mountComponent (vm) {
 
 取值时：
 
-* 对象：在对象的每一个属性的`get`方法中，利用属性对应的`dep`来收集当前正在执行的`watcher`
+* 对象：在对象每一个属性的`get`方法中，利用属性对应的`dep`来收集当前正在执行的`watcher`
 * 数组：在`Observer`中，为所有`data`中的对象和数组都添加了`__ob__`属性，可以获取`Observer`实例。并且为`Observer`实例设置了`dep`
   属性，可以直接通过`array.__ob__.depend()`来收集依赖。
 
 设置值时：
 
-* 对象：通过修改属性的`set`方法，调用`dep.notify`来执行收集的`watcher`的`update`方法
+* 对象：通过被修改属性的`set`方法，调用`dep.notify`来执行收集的`watcher`的`update`方法
 * 数组：通过调用数组方法来修改数组，在对应的数组方法更新完数组后，还会执行数组对应的`array.__ob__.notify`来通知视图更新
 
 依赖收集的具体代码如下:
@@ -221,7 +221,7 @@ function observe (data) {
 }
 ```
 
-`data`中每个对象的属性都会在`get`方法中收集依赖，在`set`方法中通知视图更新。并且为`data`中的对象和数组分别创建了一个新的`dep`，用来收集`watcher`：
+`data`中每个对象的属性都会在`get`方法中收集依赖，在`set`方法中通知视图更新。也会为`data`中的对象和数组在`Observer`实例中创建的`dep`收集`watcher`：
 
 ```javascript
 function defineReactive (target, key) {
