@@ -1,4 +1,4 @@
-import { observe } from './observer';
+import { del, observe, set } from './observer';
 import { proxy } from './shared/utils';
 
 function initState (vm) {
@@ -40,6 +40,11 @@ function initWatch () {
 
 function initComputed () {
 
+}
+
+export function stateMixin (Vue) {
+  Vue.prototype.$set = set;
+  Vue.prototype.$delete = del;
 }
 
 export default initState;

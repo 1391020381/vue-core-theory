@@ -81,6 +81,8 @@ export function popTarget () {
 
 ### Watcher
 
+> 本文中讲到的`watcher`只是起到渲染视图的作用，所以将其称为渲染`watcher`。在之后涉及到`watch`和`computed`之后，还会有它们各自相对应的`watcher`。
+
 `Watcher`的主要功能：
 
 * 收集`dep`，用于之后实现`computed`的更新
@@ -296,4 +298,80 @@ vm.array = newArray
 
 ### $set 和 $delete
 
-> 本文中讲到的`watcher`只是起到渲染视图的作用，所以将其称为渲染`watcher`。在之后涉及到`watch`和`computed`之后，还会有它们各自相对应的`watcher`。
+现在数据更新，视图也会自动更新。但是删除和新增对象属性以及通过索引修改数组并不会更新视图，为了应对这些情况，我们为代码设计了`$set`和`$delete`方法。
+
+其用法如下：
+
+```javascript
+// Vue.set( target, propertyName/index, value )
+// 为对象新增属性
+this.$set(this.someObject, 'b', 2)
+// 通过索引来修改数组
+this.$set(this.someArray, 1, 2)
+// Vue.delete( target, propertyName/index)
+this.$delete(this.someObject, 'a')
+```
+
+下面是其代码实现：
+> 由于新增属性时，`value`是自己传入的，需要重构`defineReactive`函数。这里对于重构过程不再赘述，具体可以参考源代码。
+
+```javascript
+function set (target, key, value) {
+  if (Array.isArray(target)) {// 数组直接调用splice方法
+    target.splice(key, 0, value);
+    return value;
+  }
+  if (typeof target === 'object' && target != null) { // 对象
+    const ob = target.__ob__;
+    // 通过defineReactive为对象新加的属性添加set/get方法，并进行依赖收集
+    defineReactive(target, key, value);
+    // 对象更新后通知视图更新
+    ob.dep.notify();
+    return value;
+  }
+}
+
+function del (target, key) {
+  if (Array.isArray(target)) {
+    // 代用splice删除元素
+    target.splice(key, 1);
+    return;
+  }
+  if (typeof target === 'object' && target != null) { // 对象
+    const ob = target.__ob__;
+    delete target.key;
+    // 删除对象属性后通知视图更新
+    ob.dep.notify();
+  }
+}
+```
+
+对于数组，其实只是调用了`splice`方法进行元素的添加和删除。如果是对象，会通过`defineReactive`为新加的属性设置`set/get`方法，并通过之前在`Observer`中设置的`dep`属性来通知视图更新。
+
+在实现对应的方法后，为了方便用户使用，将其设置到`Vue`的原型上：
+
+```javascript
+// src/state.js
+export function stateMixin (Vue) {
+  Vue.prototype.$set = set;
+  Vue.prototype.$delete = del;
+}
+```
+
+```javascript
+import { stateMixin } from './state';
+
+function Vue (options) {
+  this._init(options);
+}
+
+// some code ...
+
+// 添加原型方法$set $delete
+stateMixin(Vue);
+export default Vue;
+```
+
+这样用户便可以从组件实例中方便的调用`$set`和`$delete`方法来保证数据的响应性
+
+### 结语
