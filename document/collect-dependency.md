@@ -375,3 +375,10 @@ export default Vue;
 这样用户便可以从组件实例中方便的调用`$set`和`$delete`方法来保证数据的响应性
 
 ### 结语
+
+依赖收集的核心其实就是：
+
+* 获取数据的值时将视图更新函数放到一个数组中
+* 设置数据的值时依次执行数组中的函数
+
+这里可以回头再看一下`Vue`官方文档中"[数据更改追踪](https://vuejs.org/v2/guide/reactivity.html#How-Changes-Are-Tracked) "的流程图，相信你会有不一样的理解！
