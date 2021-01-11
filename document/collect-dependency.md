@@ -81,6 +81,87 @@ export function popTarget () {
 
 ### Watcher
 
+`Watcher`的主要功能：
+
+* 收集`dep`，用于之后实现`computed`的更新
+* 数据发生变化后，更新视图
+
+```javascript
+let id = 0;
+
+class Watcher {
+  constructor (vm, exprOrFn, cb, options) {
+    // 唯一标识
+    this.id = id++;
+    this.vm = vm;
+    this.exprOrFn = exprOrFn;
+    this.cb = cb;
+    this.options = options;
+    this.deps = [];
+    this.depsId = new Set(); // 利用Set来进行去重
+    if (typeof exprOrFn === 'function') {
+      this.getter = this.exprOrFn;
+    }
+    this.get();
+  }
+
+  // 在watcher中对dep进行去重，然后收集起来，并且再让收集dep收集它自己(this)。这样便完成了dep和watcher的相互收集
+  addDep (dep) {
+    // 用空间换时间，使用Set来存储deps id进行去重
+    if (!this.depsId.has(dep.id)) {
+      this.deps.push(dep);
+      this.depsId.add(dep.id);
+      // 重复的dep无法进入，每个dep只能收集一次对应watcher
+      dep.addSub(this);
+    }
+  }
+
+  get () {
+    // 更新视图之前将watcher入栈
+    pushTarget(this);
+    this.getter();
+    // 视图更新后，watcher出栈
+    popTarget();
+  }
+
+  // 更新视图
+  update () {
+    this.get();
+  }
+}
+```
+
+`Watcher`接收的参数如下：
+
+* `vm`: `Vue`组件实例
+* `exprOrFn`: 表达式或者函数
+* `cb`: 回调函数
+* `options`: 执行`watcher`的一些选项
+
+首先在组件初次挂载时，会实例化`Watcher`，在`Watcher`内部会执行传入的`exprOrFn`渲染页面：
+
+```javascript
+Vue.prototype.$mount = function (el) {
+  // some code ...
+  mountComponent(vm);
+};
+
+export function mountComponent (vm) {
+  callHook(vm, 'beforeMount');
+
+  function updateComponent () {
+    vm._update(vm._render());
+  }
+
+  // 在实例化时，会执行updateComponent来更新视图
+  new Watcher(vm, updateComponent, () => {}, { render: true });
+  callHook(vm, 'mounted');
+}
+```
+
+当`data`选项中的值发生更新后，会通过`dep.notify`来调用`watcher`的`update`，而`watcher`的`update`方法会调用`exprOrFn`即我们之前传入的`updateComponent`
+方法，从而更新视图。
+
 ### 依赖收集
 
 依赖收集时分别对对象和数组进行了不同的操作：
