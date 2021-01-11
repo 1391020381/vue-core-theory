@@ -164,8 +164,10 @@ export function mountComponent (vm) {
 ```
 
 当`data`选项中的值发生更新后，会通过`dep.notify`来调用`watcher`的`update`，而`watcher`的`update`方法会调用`exprOrFn`即我们之前传入的`updateComponent`
-方法，从而更新视图。  
-<img align="center" src="https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210111164529.png" height="400px"/>
+方法，从而更新视图。
+<p align="center">
+  <img src="https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210111164529.png" height="400px"/>
+</p>
 
 ### 依赖收集
 
