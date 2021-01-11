@@ -27,7 +27,7 @@
 
 ### Dep
 
-收集`watcher`并且在数据更新后通知`watcher`更新`DOM`的功能主要是通过`dep`来实现的，其代码如下：
+收集`watcher`并且在数据更新后通知`watcher`更新`DOM`的功能主要是通过`Dep`来实现的，其代码如下：
 
 ```javascript
 let id = 0;
@@ -56,6 +56,8 @@ class Dep {
   }
 }
 ```
+
+`Dep`会将`watcher`收集到内部数组`subs`中，之后通过`notify`方法进行统一执行。
 
 代码中还会维护一个栈，来保存所有正在执行的`watcher`，执行完毕后`watcher`出栈。
 
@@ -86,7 +88,7 @@ export function popTarget () {
 `Watcher`的主要功能：
 
 * 收集`dep`，用于之后实现`computed`的更新
-* 数据发生变化后，更新视图
+* 通过`get`方法来更新视图
 
 ```javascript
 let id = 0;
@@ -107,7 +109,7 @@ class Watcher {
     this.get();
   }
 
-  // 在watcher中对dep进行去重，然后收集起来，并且再让收集dep收集它自己(this)。这样便完成了dep和watcher的相互收集
+  // 在watcher中对dep进行去重，然后收集起来，并且再让收集的dep收集watcher本身(this)。这样便完成了dep和watcher的相互收集
   addDep (dep) {
     // 用空间换时间，使用Set来存储deps id进行去重
     if (!this.depsId.has(dep.id)) {
@@ -140,7 +142,7 @@ class Watcher {
 * `cb`: 回调函数
 * `options`: 执行`watcher`的一些选项
 
-首先在组件初次挂载时，会实例化`Watcher`，在`Watcher`内部会执行传入的`exprOrFn`渲染页面：
+首先，在组件初次挂载时，会实例化`Watcher`，在`Watcher`内部会执行传入的`exprOrFn`渲染页面：
 
 ```javascript
 Vue.prototype.$mount = function (el) {
@@ -163,6 +165,7 @@ export function mountComponent (vm) {
 
 当`data`选项中的值发生更新后，会通过`dep.notify`来调用`watcher`的`update`，而`watcher`的`update`方法会调用`exprOrFn`即我们之前传入的`updateComponent`
 方法，从而更新视图。
+![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210111164529.png)
 
 ### 依赖收集
 

@@ -5,3 +5,4 @@
 * [relationship between lastIndex and match in regexp exec method](https://excalidraw.com/#json=6370149993021440,J9YP5EAr9kQIFUH7hoj73Q)
 * [createElement](https://excalidraw.com/#json=5150809314557952,c5k6GbCMEQNeAtTYRaXB-A)
 * [initial render](https://excalidraw.com/#json=5313443955474432,EQSbR7jQ3O8jKYtYiVnIbg)
+* [property update](https://excalidraw.com/#json=5652526053457920,4HzqcBBP0jQNmGf_WxATNQ)
