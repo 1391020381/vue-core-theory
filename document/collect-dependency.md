@@ -165,7 +165,7 @@ export function mountComponent (vm) {
 
 当`data`选项中的值发生更新后，会通过`dep.notify`来调用`watcher`的`update`，而`watcher`的`update`方法会调用`exprOrFn`即我们之前传入的`updateComponent`
 方法，从而更新视图。  
-![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210111164529.png)
+<img src="https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210111164529.png" height="400px"/>
 
 ### 依赖收集
 
@@ -257,7 +257,7 @@ function defineReactive (target, key) {
 }
 ```
 
-对于数组，要递归为数组中每一项继续收集`watcher`。这样即使当数据为`arr:[[1,2,3]]`时，也可以在内层数组通过调用数组方法更新时通知视图更新:
+对于数组，要递归为数组中每一项继续收集`watcher`。这样即使当数据为`arr:[[1,2,3]]`时，也可以在内层数组调用数组方法更新时通知视图更新:
 
 ```javascript
 // src/observer/array.js
@@ -326,7 +326,7 @@ function set (target, key, value) {
   }
   if (typeof target === 'object' && target != null) { // 对象
     const ob = target.__ob__;
-    // 通过defineReactive为对象新加的属性添加set/get方法，并进行依赖收集
+    // 通过Object.defineProperty为对象新加的属性,添加其对应的set/get方法，并进行依赖收集
     defineReactive(target, key, value);
     // 对象更新后通知视图更新
     ob.dep.notify();
@@ -349,7 +349,10 @@ function del (target, key) {
 }
 ```
 
-对于数组，其实只是调用了`splice`方法进行元素的添加和删除。如果是对象，会通过`defineReactive`为新加的属性设置`set/get`方法，并通过之前在`Observer`中设置的`dep`属性来通知视图更新。
+对于数组，其实只是调用了`splice`方法进行元素的添加和删除。
+
+如果是对象，`$set`方法会通过`defineReactive`为对象新增属性，并保证属性具有响应性，而`$delete`
+会帮用户将对象中的对应属性删除。最终，`$set`和`$delete`都会利用之前在`Observer`中设置的`dep`属性通知视图更新。
 
 在实现对应的方法后，为了方便用户使用，将其设置到`Vue`的原型上：
 
