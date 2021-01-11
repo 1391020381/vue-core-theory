@@ -165,7 +165,7 @@ export function mountComponent (vm) {
 
 当`data`选项中的值发生更新后，会通过`dep.notify`来调用`watcher`的`update`，而`watcher`的`update`方法会调用`exprOrFn`即我们之前传入的`updateComponent`
 方法，从而更新视图。  
-<img src="https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210111164529.png" height="400px"/>
+<img align="center" src="https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210111164529.png" height="400px"/>
 
 ### 依赖收集
 
@@ -385,6 +385,6 @@ export default Vue;
 依赖收集的核心其实就是：
 
 * 获取数据的值时将视图更新函数放到一个数组中
-* 设置数据的值时依次执行数组中的函数
+* 设置数据的值时依次执行数组中的函数来更新视图
 
 这里可以回头再看一下`Vue`官方文档中"[数据更改追踪](https://vuejs.org/v2/guide/reactivity.html#How-Changes-Are-Tracked) "的流程图，相信你会有不一样的理解！
