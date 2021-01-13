@@ -2,6 +2,7 @@ import initMixin from './init';
 import { renderMixin } from './vdom';
 import { lifecycleMixin } from './lifecycle';
 import { initGlobalApi } from './global-api';
+import { stateMixin } from './state';
 
 function Vue (options) {
   this._init(options);
@@ -12,4 +13,5 @@ initMixin(Vue);
 renderMixin(Vue);
 lifecycleMixin(Vue);
 initGlobalApi(Vue);
+stateMixin(Vue);
 export default Vue;
