@@ -1,4 +1,4 @@
-import { observe } from './observer';
+import { del, observe, set } from './observer';
 import { proxy } from './shared/utils';
 import Watcher from './observer/watcher';
 import { nextTick } from './shared/next-tick';
@@ -76,6 +76,8 @@ function initComputed () {
 }
 
 export function stateMixin (Vue) {
+  Vue.prototype.$set = set;
+  Vue.prototype.$delete = del;
   Vue.prototype.$watch = function (exprOrFn, cb, options) {
     const vm = this;
     new Watcher(vm, exprOrFn, cb, { ...options, user: true });

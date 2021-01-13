@@ -68,7 +68,6 @@ let pending = false;
 //  3. 会调用dep.notify让收集的watcher执行update方法
 //  4. 将刷新队列的操作放入异步队列中，等待主线程的代码执行完毕
 function flushSchedulerQueue () {
-  console.log('flushSchedulerQueue');
   queue.forEach(watcher => {
     watcher.run();
     if (watcher.options.render) { // 在更新之后执行对应的回调
