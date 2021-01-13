@@ -82,10 +82,90 @@ function queueWatcher (watcher) {
 此时已经实现了视图的异步更新，但是`Vue`还为用户提供而了`$nextTick`方法，让用户可以在`DOM`更新之后做些事情。即`$nextTick`中的方法会在`flushSchedulerQueue`
 执行后才能执行，下面就来看下`$nextTick`和视图更新之间的逻辑。
 
-### 实现`$nextTick`方法
+### 实现nextTick方法
 
+在`queueWatcher`中其实并不是直接调用`setTimeout`来进行视图更新的，而是会调用内部的`nextTick`方法。为用户提供的`$nextTick`方法，也会调用`nextTick`方法。该方法实现如下：
+
+```javascript
+let callbacks = [];
+let pending = false;
+
+function flushCallbacks () {
+  callbacks.forEach(cb => cb());
+  callbacks = [];
+  pending = false;
+}
+
+export function nextTick (cb) {
+  callbacks.push(cb);
+  if (!pending) {
+    pending = true;
+    timerFunc();
+  }
+}
+```
+
+`nextTick`会接收一个回调函数，并将回调函数放到`callbacks`数组中，之后会通过`timerFunc`来异步执行`callbacks`中的每一个函数：
+
+```javascript
+let timerFunc;
+if (Promise) {
+  timerFunc = function () {
+    return Promise.resolve().then(flushCallbacks);
+  };
+} else if (MutationObserver) {
+  timerFunc = function () {
+    const textNode = document.createTextNode('1');
+    const observer = new MutationObserver(() => {
+      flushCallbacks();
+      observer.disconnect();
+    });
+    const observe = observer.observe(textNode, { characterData: true });
+    textNode.textContent = '2';
+  };
+} else if (setImmediate) {
+  timerFunc = function () {
+    setImmediate(flushCallbacks);
+  };
+} else {
+  timerFunc = function () {
+    setTimeout(flushCallbacks);
+  };
+}
+```
+
+`timerFunc`对异步`API`进行了兼容处理，分别会先尝试使用微任务`Promise.then`、`MutationObserver`、`setImmediate`
+，如果这些浏览器都不支持的话，那么会使用宏任务`setTimeout`。
+
+在`queueWatcher`里我们将`flushSchedulerQueue`作为参数执行`nextTick`：
+
+```javascript
+function queueWatcher (watcher) {
+  const id = watcher.id;
+  if (!has[id]) {
+    queue.push(watcher);
+    has[id] = true;
+    if (!pending) {
+      pending = true;
+      nextTick(flushSchedulerQueue);
+    }
+  }
+}
+```
+
+在`Vue`原型上，也要增加用户可以通过实例来调用的`$nextTick`方法，其内部调用`nextTick`：
+
+```javascript
+Vue.prototype.$nextTick = function (cb) {
+  nextTick(cb);
+};
+```
+
+`$nextTick`会将用户传入的回调函数也放到`callbacks`中，通过异步`API`来执行。
 
 ### 测试demo详解
+
+上面已经讲解了视图更新和`$nextTick`的实现代码，接下来写一个`demo`来实践一下。
 
 下面实际开发中可能会用到的一段代码：
 
