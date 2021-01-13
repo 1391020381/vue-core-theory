@@ -1,5 +1,8 @@
 ## 异步更新
 
+> * 源码地址：[传送门](https://cn.vuejs.org/v2/guide/reactivity.html#%E5%BC%82%E6%AD%A5%E6%9B%B4%E6%96%B0%E9%98%9F%E5%88%97)
+> * [异步更新队列](https://cn.vuejs.org/v2/guide/reactivity.html#%E5%BC%82%E6%AD%A5%E6%9B%B4%E6%96%B0%E9%98%9F%E5%88%97)
+
 在依赖收集章节，我们实现了在数据更新后自动更新视图。这样当用户不停的更新数据时就会不停地进行视图更新，显然这是很耗费性能的。
 
 `Vue`在数据修改后，并没有直接更新视图，而是视图更新的方法放到异步任务中执行。本文将详细讲解具体的更新过程，并手写`Vue`的`$nextTick`方法。
@@ -76,8 +79,21 @@ function queueWatcher (watcher) {
 }
 ```
 
-### 实现nextTick方法
+此时已经实现了视图的异步更新，但是`Vue`还为用户提供而了`$nextTick`方法，让用户可以在`DOM`更新之后做些事情。即`$nextTick`中的方法会在`flushSchedulerQueue`
+执行后才能执行，下面就来看下`$nextTick`和视图更新之间的逻辑。
+
+### 实现`$nextTick`方法
+
 
 ### 测试demo详解
 
+下面实际开发中可能会用到的一段代码：
+
+```javascript
+
+```
+
+在了解了`$nextTick`的具体实现后，分析下代码的执行流程：
+
 ### 写在最后
+
