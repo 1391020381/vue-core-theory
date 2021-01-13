@@ -1,4 +1,4 @@
-import { observe } from './observer';
+import { del, observe, set } from './observer';
 import { noop, proxy } from './shared/utils';
 import Watcher from './observer/watcher';
 import { nextTick } from './shared/next-tick';
@@ -128,6 +128,11 @@ export function stateMixin (Vue) {
     const vm = this;
     nextTick(cb);
   };
+}
+
+export function stateMixin (Vue) {
+  Vue.prototype.$set = set;
+  Vue.prototype.$delete = del;
 }
 
 export default initState;
