@@ -1,8 +1,5 @@
 ## 异步更新
 
-> * 源码地址：[传送门](https://cn.vuejs.org/v2/guide/reactivity.html#%E5%BC%82%E6%AD%A5%E6%9B%B4%E6%96%B0%E9%98%9F%E5%88%97)
-> * [异步更新队列](https://cn.vuejs.org/v2/guide/reactivity.html#%E5%BC%82%E6%AD%A5%E6%9B%B4%E6%96%B0%E9%98%9F%E5%88%97)
-
 在依赖收集章节，我们实现了在数据更新后自动更新视图。这样当用户不停的更新数据时就会不停地进行视图更新，显然这是很耗费性能的。
 
 `Vue`在数据修改后，并没有直接更新视图，而是视图更新的方法放到异步任务中执行。本文将详细讲解具体的更新过程，并手写`Vue`的`$nextTick`方法。
@@ -199,7 +196,13 @@ Vue.prototype.$nextTick = function (cb) {
 * 而`nextTick`将`flushSchedulerQueue`放到了`callbacks`中，通过异步任务来执行`flushCallbacks`
 * 由于异步任务要等到主线程中的代码执行完毕后才会执行，所以此时先打印`vm.$el`，视图尚未更新
 * 接下来会继续执行`vm.$nextTick`，将`vm.$nextTick`中的回调函数也放到了`callbacks`中，但是其位置在`flushSchedulerQueue`后边
-* 主线程中的代码执行完毕，开始执行异步任务`flushCallbacks`。首先执行`flushSchedulerQueue`更新`DOM`，然后在执行`$nextTick`中的回调，此时会获取到最新的`DOM`
+* 主线程中的代码执行完毕，开始执行异步任务`flushCallbacks`。首先执行`flushSchedulerQueue`更新`DOM`，然后再执行`$nextTick`中的回调函数，此时会获取到最新的`DOM`
 
 ### 写在最后
 
+文章的相关资料如下：
+
+* 源码地址：[传送门](https://cn.vuejs.org/v2/guide/reactivity.html#%E5%BC%82%E6%AD%A5%E6%9B%B4%E6%96%B0%E9%98%9F%E5%88%97)
+* [异步更新队列](https://cn.vuejs.org/v2/guide/reactivity.html#%E5%BC%82%E6%AD%A5%E6%9B%B4%E6%96%B0%E9%98%9F%E5%88%97)
+
+希望再读完本文后，小伙伴们能对`Vue`的异步更新有更深的理解。
