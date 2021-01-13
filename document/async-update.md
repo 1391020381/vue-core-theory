@@ -169,11 +169,37 @@ Vue.prototype.$nextTick = function (cb) {
 
 下面实际开发中可能会用到的一段代码：
 
-```javascript
+```html
 
+<div id="app">{{name}}</div>
+<script>
+  const vm = new Vue({
+    el: '#app',
+    data () {
+      return {
+        name: 'zs'
+      };
+    }
+  });
+  vm.name = 'ls';
+  console.log('$el', vm.$el);
+  vm.$nextTick(() => {
+    console.log('next tick $el', vm.$el);
+  });
+</script>
 ```
 
+其输出结果如下：
+![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210113145011.png)
+
 在了解了`$nextTick`的具体实现后，分析下代码的执行流程：
+![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210113154216.png)
+
+* 在修改值之后，我们将要更新的`watcher`队列放到了`flushSchedulerQueue`函数中来执行
+* 而`nextTick`将`flushSchedulerQueue`放到了`callbacks`中，通过异步任务来执行`flushCallbacks`
+* 由于异步任务要等到主线程中的代码执行完毕后才会执行，所以此时先打印`vm.$el`，视图尚未更新
+* 接下来会继续执行`vm.$nextTick`，将`vm.$nextTick`中的回调函数也放到了`callbacks`中，但是其位置在`flushSchedulerQueue`后边
+* 主线程中的代码执行完毕，开始执行异步任务`flushCallbacks`。首先执行`flushSchedulerQueue`更新`DOM`，然后在执行`$nextTick`中的回调，此时会获取到最新的`DOM`
 
 ### 写在最后
 

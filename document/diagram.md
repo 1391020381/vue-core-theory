@@ -6,3 +6,4 @@
 * [createElement](https://excalidraw.com/#json=5150809314557952,c5k6GbCMEQNeAtTYRaXB-A)
 * [initial render](https://excalidraw.com/#json=5313443955474432,EQSbR7jQ3O8jKYtYiVnIbg)
 * [property update](https://excalidraw.com/#json=5652526053457920,4HzqcBBP0jQNmGf_WxATNQ)
+* [$nextTick](https://excalidraw.com/#json=6470676588265472,TyUcaBMH1bgXVBH8epWqPw)
