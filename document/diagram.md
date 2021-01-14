@@ -8,4 +8,4 @@
 * [property update](https://excalidraw.com/#json=5652526053457920,4HzqcBBP0jQNmGf_WxATNQ)
 * [$nextTick](https://excalidraw.com/#json=6470676588265472,TyUcaBMH1bgXVBH8epWqPw)
 * [initWatch](https://excalidraw.com/#json=5076910107262976,zjY3bMntgL-nEIZFwCytvg)
-* [before initWatch](https://excalidraw.com/#json=6703184911269888,SsdGrFFxiVuZCzvxyqzcRg)
+* [before initWatch](https://excalidraw.com/#json=6423807019450368,G4hiXPJhgXmMAF4joHH3hA)

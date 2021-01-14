@@ -1,8 +1,8 @@
 ## watch
 
-对于`watch`的用法，在`Vue`[文档](https://vuejs.org/v2/api/#watch) 中有详细描述，它可以让我们观察`data`中属性的变化。还提供了一个回调函数，可以让用户在值变化后做一些事情。
+对于`watch`的用法，在`Vue`[文档](https://vuejs.org/v2/api/#watch) 中有详细描述，它可以让我们观察`data`中属性的变化。并提供了一个回调函数，可以让用户在属性值变化后做一些事情。
 
-`watch`对象中的`value`分别支持函数、数组、字符串、对象，较为常用的是函数的方式，当想要观察一个对象以及对象中的每一个属性的变化时，也会用到对象的方式。
+`watch`对象中的`value`分别支持函数、数组、字符串、对象，较为常用的是函数的方式，当想要观察一个对象以及对象中的每一个属性的变化时，便会用到对象的方式。
 
 下面是官方的一个例子，相信在看完之后就能对`watch`的几种用法有大概的了解：
 
@@ -53,10 +53,11 @@ vm.a = 2 // => new: 2, old: 1
 
 ### 初始化`watch`
 
-在知道了`watch`的用法之后，我们开始实现`watch`。
+在了解了`watch`的用法之后，我们开始实现`watch`。
+
+![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210114164936.png)
 
 在初始化状态`initState`时，会判断用户在实例化`Vue`时是否传入了`watch`选项，如果用户传入了`watch`，就会进行`watch`的初始化操作：
-![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210114164146.png)
 
 ```javascript
 // src/state.js
@@ -94,13 +95,13 @@ function initWatch (vm) {
 ```javascript
 function createWatcher (vm, key, userDefine) {
   let handler;
-  if (typeof userDefine === 'string') { // 字符串
+  if (typeof userDefine === 'string') { // 字符串,从实例上取到对应的method
     handler = vm[userDefine];
     userDefine = {};
   } else if (typeof userDefine === 'function') { // 函数
     handler = userDefine;
     userDefine = {};
-  } else { // 对象
+  } else { // 对象，userDefine中可能会包含用户传入的deep,immediate属性
     handler = userDefine.handler;
     delete userDefine.handler;
   }
@@ -109,7 +110,7 @@ function createWatcher (vm, key, userDefine) {
 }
 ```
 
-`createWatcher`中对参数进行统一处理，之后调用了`vm.$watch`，在`vm.$watch`中执行了`watcher`的实例化操作：
+`createWatcher`中对参数进行统一处理，之后调用了`vm.$watch`，在`vm.$watch`中执行了`Watcher`的实例化操作：
 
 ```javascript
 export function stateMixin (Vue) {
@@ -125,7 +126,7 @@ export function stateMixin (Vue) {
 
 * `vm`: 组件实例
 * `exprOrFn`: `watch`选项对应的`key`
-* `cb`: `watch`选项中`key`对应的`value`中处理逻辑的回调函数，接收`key`对应的`data`中的属性的旧值和新值作为参数
+* `cb`: `watch`选项中`key`对应的`value`中提供给用户处理逻辑的回调函数，接收`key`在`data`中的对应属性的旧值和新值作为参数
 * `options`: `{user: true, immediate: true, deep: true}`, `immediate`和`deep`属性当`key`对应的`value`为对象时，用户可能会传入
 
 在`Watcher`中会判断`options`中有没有`user`属性来区分是否是`watch`属性对应的`watcher`:
@@ -141,7 +142,7 @@ class Watcher {
       this.getter = function () {
         const keys = exprOrFn.split('.');
         // 后一次拿到前一次的返回值，然后继续进行操作
-        // 在取值是，会收集当前Dep.target对应的`watcher`，这里对应的是`watch`属性对应的`watcher`
+        // 在取值时，会收集当前Dep.target对应的`watcher`，这里对应的是`watch`属性对应的`watcher`
         return keys.reduce((memo, cur) => memo[cur], vm);
       };
     }
@@ -161,7 +162,7 @@ class Watcher {
 
 这里有俩个重要的逻辑：
 
-* 由于传入的`exprOrFn`是字符串，所以`this.getter`的逻辑就是从`vm`实例上找到`exprOrFn`对应值并返回
+* 由于传入的`exprOrFn`是字符串，所以`this.getter`的逻辑就是从`vm`实例上找到`exprOrFn`对应的值并返回
 * 在`watcher`实例化时，会执行`this.get`，此时会通过`this.getter`方法进行取值。取值就会触发对应属性的`get`方法，收集当前的`watcher`作为依赖
 * 将`this.get`的返回值赋值给`this.value`，此时拿到的就是旧值
 
@@ -185,10 +186,12 @@ class Watcher {
 }
 ```
 
-和渲染`watcher`相同，`update`方法中会将对应的`watch` `watcher`去重后放到异步队列中执行，所以当用户多次修改`watch`属性观察的值时，并不会不停的触发对应`watcher`
-的更新操作，而只是以它最后一次更新后的值作为最终值来执行`this.get`进行取值操作。
+和渲染`watcher`相同，`update`方法中会将对应的`watch watcher`去重后放到异步队列中执行，所以当用户多次修改`watch`属性观察的值时，并不会不停的触发对应`watcher`
+的更新操作，而只是以它最后一次更新的值作为最终值来执行`this.get`进行取值操作。
 
-当我们拿到观察属性的最新值之后，执行`watcher`中传入的回调函数，传入新值和旧值。画图来梳理下这个过程：
+当我们拿到观察属性的最新值之后，执行`watcher`中传入的回调函数，传入新值和旧值。
+
+下面画图来梳理下这个过程：
 ![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210114162335.png)
 
 ### `deep`、`immdediate`属性
@@ -271,3 +274,5 @@ function _traverse (value, seen) {
 ```
 
 需要注意的是，这里利用`Set`来存储每个属性对应的`dep`的`id`。这样当出现环时，`Set`中已经存储过了其对应`dep`的`id`，便会终止递归。
+
+### 结语
