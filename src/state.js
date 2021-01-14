@@ -89,9 +89,9 @@ export function stateMixin (Vue) {
   Vue.prototype.$delete = del;
   Vue.prototype.$watch = function (exprOrFn, cb, options) {
     const vm = this;
-    const watch = new Watcher(vm, exprOrFn, cb, { ...options, user: true });
+    const watcher = new Watcher(vm, exprOrFn, cb, { ...options, user: true });
     if (options.immediate) { // 在初始化后立即执行watch
-      cb.call(vm, watch.value);
+      cb.call(vm, watcher.value);
     }
   };
   Vue.prototype.$nextTick = function (cb) {
