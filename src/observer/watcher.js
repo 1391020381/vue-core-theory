@@ -1,5 +1,6 @@
 import { popTarget, pushTarget } from './dep';
 import { nextTick } from '../shared/next-tick';
+import { traverse } from './traverse';
 
 let id = 0;
 
@@ -11,6 +12,7 @@ class Watcher {
     this.cb = cb;
     this.options = options;
     this.user = options.user;
+    this.deep = options.deep;
     this.deps = [];
     this.depsId = new Set();
     if (typeof exprOrFn === 'function') {
@@ -39,6 +41,9 @@ class Watcher {
   get () {
     pushTarget(this);
     const value = this.getter();
+    if (this.deep) {
+      traverse(value);
+    }
     popTarget();
     return value;
   }
