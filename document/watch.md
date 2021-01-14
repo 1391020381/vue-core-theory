@@ -192,7 +192,7 @@ class Watcher {
 当我们拿到观察属性的最新值之后，执行`watcher`中传入的回调函数，传入新值和旧值。
 
 下面画图来梳理下这个过程：
-![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210114162335.png)
+![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210114170208.png)
 
 ### `deep`、`immdediate`属性
 
@@ -210,7 +210,7 @@ Vue.prototype.$watch = function (exprOrFn, cb, options) {
 
 此时`watcher.value`是被观察的属性当前的值，由于此时属性还没有更新，所以老值为`undefined`。
 
-`watch`如果观察的属性为对象，那么默认当对象内的属性更新，并不会触发对应的回调函数。此时，用户可以传入`deep`选项，来让对象内部属性更新也调用对应的回调函数：
+如果`watch`观察的属性为对象，那么默认对象内的属性更新，并不会触发对应的回调函数。此时，用户可以传入`deep`选项，来让对象内部属性更新也调用对应的回调函数：
 
 ```javascript
 class Watcher {
@@ -228,9 +228,9 @@ class Watcher {
 ```
 
 当用户传入`deep`属性后，`get`方法中会执行`traverse`方法来遍历`value`中的每一个值，这样便可以继续触发`value`中属性对应的`get`方法，为其收集当前的`watcher`作为依赖。这样在`value`
-内部属性更新时，也会通知其收集的`watch` `watcher`进行更新操作。
+内部属性更新时，也会通知其收集的`watch watcher`进行更新操作。
 
-`traverse`的逻辑只是递归遍历传入参数的每一个属性，当遇到简单数据类型便停止递归：
+`traverse`的逻辑只是递归遍历传入数据的每一个属性，当遇到简单数据类型时便停止递归：
 
 ```javascript
 // traverse.js
@@ -276,3 +276,7 @@ function _traverse (value, seen) {
 需要注意的是，这里利用`Set`来存储每个属性对应的`dep`的`id`。这样当出现环时，`Set`中已经存储过了其对应`dep`的`id`，便会终止递归。
 
 ### 结语
+
+本文一步步实现了`Vue`的`watch`属性，并对内部的实现逻辑提供了笔者相应的理解 。
+
+希望小伙伴在读完本文后，能够在`Vue`项目中使用到`watch`属性时，从源码的角度理解它到底帮我们做了些什么！
