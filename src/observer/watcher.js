@@ -1,5 +1,6 @@
 import { popTarget, pushTarget } from './dep';
 import { nextTick } from '../shared/next-tick';
+import { traverse } from './traverse';
 
 let id = 0;
 
@@ -11,6 +12,7 @@ class Watcher {
     this.cb = cb;
     this.options = options;
     this.user = options.user;
+    this.deep = options.deep;
     this.deps = [];
     this.depsId = new Set();
     if (typeof exprOrFn === 'function') {
@@ -39,6 +41,9 @@ class Watcher {
   get () {
     pushTarget(this);
     const value = this.getter();
+    if (this.deep) {
+      traverse(value);
+    }
     popTarget();
     return value;
   }
@@ -68,7 +73,6 @@ let pending = false;
 //  3. 会调用dep.notify让收集的watcher执行update方法
 //  4. 将刷新队列的操作放入异步队列中，等待主线程的代码执行完毕
 function flushSchedulerQueue () {
-  console.log('flushSchedulerQueue');
   queue.forEach(watcher => {
     watcher.run();
     if (watcher.options.render) { // 在更新之后执行对应的回调
