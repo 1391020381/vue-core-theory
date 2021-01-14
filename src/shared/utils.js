@@ -17,6 +17,10 @@ export function proxy (target, key, source) {
   });
 }
 
+export function isObject (value) {
+  return typeof value === 'object' && value != null;
+}
+
 // noop: short for no operation
 // https://en.wikipedia.org/wiki/NOP_(code)
 export function noop () {

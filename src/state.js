@@ -45,10 +45,13 @@ function initData (vm) {
 
 function createWatcher (vm, key, userDefine) {
   let handler;
-  if (typeof userDefine === 'function') {
+  if (typeof userDefine === 'string') { // 字符串
+    handler = vm[userDefine];
+    userDefine = {};
+  } else if (typeof userDefine === 'function') { // 函数
     handler = userDefine;
     userDefine = {};
-  } else {
+  } else { // 对象
     handler = userDefine.handler;
     delete userDefine.handler;
   }
@@ -70,7 +73,13 @@ function initWatch (vm) {
   for (const key in watch) {
     if (watch.hasOwnProperty(key)) {
       const userDefine = watch[key];
-      createWatcher(vm, key, userDefine);
+      if (Array.isArray(userDefine)) {
+        userDefine.forEach(item => {
+          createWatcher(vm, key, item);
+        });
+      } else {
+        createWatcher(vm, key, userDefine);
+      }
     }
   }
 }
@@ -120,19 +129,19 @@ function initComputed (vm) {
 }
 
 export function stateMixin (Vue) {
+  Vue.prototype.$set = set;
+  Vue.prototype.$delete = del;
   Vue.prototype.$watch = function (exprOrFn, cb, options) {
     const vm = this;
-    new Watcher(vm, exprOrFn, cb, { ...options, user: true });
+    const watcher = new Watcher(vm, exprOrFn, cb, { ...options, user: true });
+    if (options.immediate) { // 在初始化后立即执行watch
+      cb.call(vm, watcher.value);
+    }
   };
   Vue.prototype.$nextTick = function (cb) {
     const vm = this;
     nextTick(cb);
   };
-}
-
-export function stateMixin (Vue) {
-  Vue.prototype.$set = set;
-  Vue.prototype.$delete = del;
 }
 
 export default initState;
