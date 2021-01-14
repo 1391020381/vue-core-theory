@@ -56,6 +56,7 @@ vm.a = 2 // => new: 2, old: 1
 在知道了`watch`的用法之后，我们开始实现`watch`。
 
 在初始化状态`initState`时，会判断用户在实例化`Vue`时是否传入了`watch`选项，如果用户传入了`watch`，就会进行`watch`的初始化操作：
+![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210114164146.png)
 
 ```javascript
 // src/state.js
