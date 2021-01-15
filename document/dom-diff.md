@@ -270,8 +270,9 @@ const html2 = `
 `;
 ```
 
-此时`oldChildren`中的头指针和`newChildren`中的头指针相同，其比对逻辑如下：
+此时`oldChildren`中的头节点和`newChildren`中的尾节点相同，其比对逻辑如下：
 
+* 继续对`oldStartVNode`和`newStartVNode`执行`patch`方法，比对它们的标签、属性、文本以及孩子节点
 * `oldStartVNode`和`newStartVNode`分别进行后移，继续进行比对
 * 遍历完老节点后，循环停止
 * 将新节点中剩余的元素插入到老的虚拟节点的尾节点对应的真实节点的下一个兄弟节点`oldEndVNode.el.nextSibling`之前
@@ -284,29 +285,6 @@ const html2 = `
 
 ```javascript
 function updateChildren (oldChildren, newChildren, parent) {
-  // 更新子节点:
-  //  1. 一层一层进行比较，如果发现有一层不一样，直接就会用新节点的子集来替换父节点的子集。
-  //  2. 比较时会采用双指针，对常见的操作进行优化
-  let oldStartIndex = 0,
-    oldStartVNode = oldChildren[0],
-    oldEndIndex = oldChildren.length - 1,
-    oldEndVNode = oldChildren[oldEndIndex];
-  let newStartIndex = 0,
-    newStartVNode = newChildren[0],
-    newEndIndex = newChildren.length - 1,
-    newEndVNode = newChildren[newEndIndex];
-
-  function makeMap () {
-    const map = {};
-    for (let i = 0; i < oldChildren.length; i++) {
-      const child = oldChildren[i];
-      child.key && (map[child.key] = i);
-    }
-    return map;
-  }
-
-  // 将老节点的key和索引进行映射，之后可以直接通过key找到索引，然后通过索引找到对应的元素
-  // 这样提前做好映射关系，可以将查找的时间复杂度降到O(1)
   const map = makeMap();
   while (oldStartIndex <= oldEndIndex && newStartIndex <= newEndIndex) {
     if (isSameVNode(oldStartIndex, newStartIndex)) { // 头和头相等
