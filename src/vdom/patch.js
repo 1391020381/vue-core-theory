@@ -15,16 +15,18 @@ function updateProperties (vNode, oldProps = {}) { // 老节点和新节点的�
       }
     }
   }
-  const style = oldProps.style || {}; // 删除老节点中多余的样式
-  for (const key in style) {
-    if (props.style && !props.style.hasOwnProperty(key) && style.hasOwnProperty(key)) {
-      el.style[key] = '';
-    }
-  }
   // 如果老节点中有，而新节点中没有，需要将其删除
   for (const key in oldProps) {
     if (oldProps.hasOwnProperty(key) && !props.hasOwnProperty(key)) {
       el.removeAttribute(key);
+    }
+  }
+  const style = oldProps.style || {};
+  const newStyle = props.style || {};
+  // 删除老节点中多余的样式
+  for (const key in style) {
+    if (!newStyle.hasOwnProperty(key) && style.hasOwnProperty(key)) {
+      el.style[key] = '';
     }
   }
 }
