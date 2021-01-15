@@ -157,7 +157,7 @@ function updateChildren (oldChildren, newChildren, parent) {
       // 1. 用key来进行寻找，找到将其移动到头节点之前
       // 2. 没有找到，将新头节点插入到老头节点之前
       let moveIndex = map[newStartVNode.key];
-      if (moveIndex != undefined) { // 找到了
+      if (moveIndex != null) { // 找到了
         const moveVNode = oldChildren[moveIndex];
         parent.insertBefore(moveVNode.el, oldStartVNode.el);
         oldChildren[moveIndex] = null; // 将移动这项标记为null，之后跳过，不再进行比对

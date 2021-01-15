@@ -244,7 +244,7 @@ function isSameVNode (oldVNode, newVNode) {
 
 #### 尾部新增元素
 
-我们在老节点的末尾新增一个元素作为新节点，其对应的`tempalte`如下：
+我们在老节点孩子的末尾新增一个元素作为新节点，其对应的`tempalte`如下：
 
 ```javascript
 const html1 = `
@@ -273,7 +273,7 @@ const html2 = `
 此时`oldChildren`中的头节点和`newChildren`中的尾节点相同，其比对逻辑如下：
 
 * 继续对`oldStartVNode`和`newStartVNode`执行`patch`方法，比对它们的标签、属性、文本以及孩子节点
-* `oldStartVNode`和`newStartVNode`分别进行后移，继续进行比对
+* `oldStartVNode`和`newStartVNode`同时后移，继续进行比对
 * 遍历完老节点后，循环停止
 * 将新节点中剩余的元素插入到老的虚拟节点的尾节点对应的真实节点的下一个兄弟节点`oldEndVNode.el.nextSibling`之前
 
@@ -302,6 +302,157 @@ function updateChildren (oldChildren, newChildren, parent) {
   }
 }
 ```
+
+#### 头部新增元素
+
+老节点的孩子的头部新增元素`E`，此时新老节点的`template`结构如下：
+
+```javascript
+const html1 = `
+  <div id="app">
+    <ul>
+      <li key="A" style="color:red">A</li>
+      <li key="B" style="color:yellow">B</li>
+      <li key="C" style="color:blue">C</li>
+      <li key="D" style="color:green">D</li>
+    </ul>
+  </div>
+`;
+const html2 = `
+  <div id="app">
+    <ul>
+      <li key="E" style="color:purple">E</li>
+      <li key="A" style="color:red">A</li>
+      <li key="B" style="color:yellow">B</li>
+      <li key="C" style="color:blue">C</li>
+      <li key="D" style="color:green">D</li>
+    </ul>
+  </div>
+`;
+```
+
+其比对逻辑和尾部新增类似，只不过此时是`oldEndVNode`和`startEndVNode`相同：
+
+* 继续通过`patch`比对`oldEndVNode`和`startEndVNode`的标签、属性、文本及孩子节点
+* 此时要将`oldEndVNode`和`startEndVNode`同时前移，继续进行比对
+* 遍历完老节点后，循环停止
+* 将新节点中剩余的元素插入到老的虚拟节点的尾节点对应的真实节点的下一个兄弟节点`oldEndVNode.el.nextSibling`之前
+
+该逻辑的示意图如下：  
+![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210115173756.png)
+
+`patch`中新增代码如下：
+
+```javascript
+function updateChildren (oldChildren, newChildren, parent) {
+  while (oldStartIndex <= oldEndIndex && newStartIndex <= newEndIndex) {
+    if (isSameVNode(oldStartIndex, newStartIndex)) { // 头和头相等
+      // some code ...  
+    } else if (isSameVNode(oldEndVNode, newEndVNode)) { // 尾和尾相等
+      patch(oldEndVNode, newEndVNode);
+      oldEndVNode = oldChildren[--oldEndIndex];
+      newEndVNode = newChildren[--newEndIndex];
+    }
+  }
+  // some code ...  
+}
+```
+
+#### 开始元素移动到末尾
+
+在新节点中，我们将开始元素`A`移动到末尾，对应的`template`如下： 老节点的孩子的头部新增元素`E`，此时新老节点的`template`结构如下：
+
+```javascript
+const html1 = `
+  <div id="app">
+    <ul>
+      <li key="A" style="color:red">A</li>
+      <li key="B" style="color:yellow">B</li>
+      <li key="C" style="color:blue">C</li>
+      <li key="D" style="color:green">D</li>
+    </ul>
+  </div>
+`;
+const html2 = `
+  <div id="app">
+    <ul>
+      <li key="B" style="color:yellow">B</li>
+      <li key="C" style="color:blue">C</li>
+      <li key="D" style="color:green">D</li>
+      <li key="A" style="color:red">A</li>
+    </ul>
+  </div>
+`;
+```
+
+此时`oldStartVNode`和`startEndVNode`相同：
+
+* 继续通过`patch`比对`oldStartVNode`和`startEndVNode`的标签、属性、文本及孩子节点
+* 将`oldStartVNode`对应的真实节点插入到`oldEndVNode`对应的真实节点之后
+* `oldStartVNode`前移，`startEndVNode`后移
+* 遍历完新老节点后，循环停止，此时元素已经移动到了正确的位置
+
+用图来演示该过程：
+![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210115175116.png)
+
+在`patch`方法中编写代码：
+
+```javascript
+function updateChildren (oldChildren, newChildren, parent) {
+  while (oldStartIndex <= oldEndIndex && newStartIndex <= newEndIndex) {
+    if (isSameVNode(oldStartIndex, newStartIndex)) { // 头和头相等
+      // some code ...
+    } else if (isSameVNode(oldEndVNode, newEndVNode)) { // 尾和尾相等
+      // some code ...
+    } else if (isSameVNode(oldStartVNode, newEndVNode)) { // 将开头元素移动到了末尾：尾和头相同
+      // 老节点：需要将头节点对应的元素移动到尾节点之后
+      parent.insertBefore(oldStartVNode, oldEndVNode.el.nextSibling);
+      patch(oldStartVNode, newEndVNode);
+      oldStartVNode = oldChildren[++oldStartIndex];
+      newEndVNode = newChildren[--newEndIndex];
+    }
+  }
+}
+```
+
+#### 末尾元素移动到开头
+
+> 将解到这里，大家可以先停下来阅读的脚步，参考一下之前的逻辑，想想这里会如何进行比对？
+
+在新节点中，我们将末尾元素`D`移动到开头，对应的`template`如下：
+
+```javascript
+const html1 = `
+  <div id="app">
+    <ul>
+      <li key="A" style="color:red">A</li>
+      <li key="B" style="color:yellow">B</li>
+      <li key="C" style="color:blue">C</li>
+      <li key="D" style="color:green">D</li>
+    </ul>
+  </div>
+`;
+const html2 = `
+  <div id="app">
+    <ul>
+      <li key="D" style="color:green">D</li>
+      <li key="A" style="color:red">A</li>
+      <li key="B" style="color:yellow">B</li>
+      <li key="C" style="color:blue">C</li>
+    </ul>
+  </div>
+`;
+```
+
+此时`oldEndVNode`和`newStartVNode`相同：
+
+* 继续通过`patch`比对`oldEndVNode`和`newStartVNode`的标签、属性、文本及孩子节点
+* 将`oldEndVNode`对应的真实节点插入到`oldStartVNode`对应的真实节点之前
+* `oldEndVNode`前移，`newStartVNode`后移
+* 遍历完新老节点后，循环停止，此时元素已经移动到了正确的位置
+
+用图来演示该过程：
+![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210115180041.png)
 
 ### 乱序比对
 
