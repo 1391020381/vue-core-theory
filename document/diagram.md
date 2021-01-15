@@ -9,3 +9,5 @@
 * [$nextTick](https://excalidraw.com/#json=6470676588265472,TyUcaBMH1bgXVBH8epWqPw)
 * [initWatch](https://excalidraw.com/#json=5931114812145664,2R6h4dxLjrwarU2z3idw9w)
 * [before initWatch](https://excalidraw.com/#json=6423807019450368,G4hiXPJhgXmMAF4joHH3hA)
+* [diff according to level](https://excalidraw.com/#json=6565581541081088,cc0lOqBcDY9EqJOd9TVyuA)
+* [per level diff](https://excalidraw.com/#json=5796722332663808,54pTzGwjyCo5CPUDHkgaHA)
