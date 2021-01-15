@@ -385,11 +385,11 @@ const template2 = `
 `;
 ```
 
-此时`oldStartVNode`和`startEndVNode`相同：
+此时`oldStartVNode`和`newEndVNode`相同：
 
-* 继续通过`patch`比对`oldStartVNode`和`startEndVNode`的标签、属性、文本及孩子节点
+* 继续通过`patch`比对`oldStartVNode`和`newEndVNode`的标签、属性、文本及孩子节点
 * 将`oldStartVNode`对应的真实节点插入到`oldEndVNode`对应的真实节点之后
-* `oldStartVNode`前移，`startEndVNode`后移
+* `oldStartVNode`后移，`newEndVNode`前移
 * 遍历完新老节点后，循环停止，此时元素已经移动到了正确的位置
 
 用图来演示该过程：
@@ -417,12 +417,12 @@ function updateChildren (oldChildren, newChildren, parent) {
 
 #### 末尾元素移动到开头
 
-> 将解到这里，大家可以先停下来阅读的脚步，参考一下之前的逻辑，想想这里会如何进行比对？
+> 讲解到这里，大家可以先停下阅读的脚步，参考一下之前的逻辑，想想这里会如何进行比对？
 
 在新节点中，我们将末尾元素`D`移动到开头，对应的`template`如下：
 
 ```javascript
-const html1 = `
+const template1 = `
   <div id="app">
     <ul>
       <li key="A" style="color:red">A</li>
@@ -432,7 +432,7 @@ const html1 = `
     </ul>
   </div>
 `;
-const html2 = `
+const template2 = `
   <div id="app">
     <ul>
       <li key="D" style="color:green">D</li>
@@ -451,9 +451,93 @@ const html2 = `
 * `oldEndVNode`前移，`newStartVNode`后移
 * 遍历完新老节点后，循环停止，此时元素已经移动到了正确的位置
 
-用图来演示该过程：
+画图来演示该过程：
 ![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210115180041.png)
+
+在`patch`方法中添加处理该逻辑的代码：
+
+```javascript
+function updateChildren (oldChildren, newChildren, parent) {
+  // 更新子节点:
+  //  1. 一层一层进行比较，如果发现有一层不一样，直接就会用新节点的子集来替换父节点的子集。
+  //  2. 比较时会采用双指针，对常见的操作进行优化
+  let oldStartIndex = 0,
+    oldStartVNode = oldChildren[0],
+    oldEndIndex = oldChildren.length - 1,
+    oldEndVNode = oldChildren[oldEndIndex];
+  let newStartIndex = 0,
+    newStartVNode = newChildren[0],
+    newEndIndex = newChildren.length - 1,
+    newEndVNode = newChildren[newEndIndex];
+
+  function makeMap () {
+    const map = {};
+    for (let i = 0; i < oldChildren.length; i++) {
+      const child = oldChildren[i];
+      child.key && (map[child.key] = i);
+    }
+    return map;
+  }
+
+  // 将老节点的key和索引进行映射，之后可以直接通过key找到索引，然后通过索引找到对应的元素
+  // 这样提前做好映射关系，可以将查找的时间复杂度降到O(1)
+  const map = makeMap();
+  while (oldStartIndex <= oldEndIndex && newStartIndex <= newEndIndex) {
+    if (isSameVNode(oldStartIndex, newStartIndex)) { // 头和头相等
+      // some code ...
+    } else if (isSameVNode(oldEndVNode, newEndVNode)) { // 尾和尾相等
+      // some code ...
+    } else if (isSameVNode(oldStartVNode, newEndVNode)) { // 将开头元素移动到了末尾：尾和头相同
+      // some code ...
+    } else if (isSameVNode(oldEndVNode, newStartVNode)) { // 将结尾元素移动到了开头
+      // 老节点： 将尾指针元素插入到头指针之前
+      parent.insertBefore(oldEndVNode.el, oldStartVNode.el);
+      patch(oldEndVNode, newStartVNode);
+      oldEndVNode = oldChildren[--oldEndIndex];
+      newStartVNode = newChildren[++newStartIndex];
+    }
+  }
+}
+```
+
+到这里，`patch`方法中已经完成了所有的优化操作，下面我们来看下如何对比乱序的孩子节点
 
 ### 乱序比对
 
-当进行比对的元素不满足优化条件时，就要进行乱序对比
+当进行比对的元素不满足优化条件时，就要进行乱序对比。下面是俩个乱序的`template`为例，看下它们的具体比对过程：
+
+```javascript
+const html1 = `
+  <div id="app">
+    <ul>
+      <li key="D" style="color:red">D</li>
+      <li key="B" style="color:yellow">B</li>
+      <li key="Z" style="color:blue">Z</li>
+      <li key="F" style="color:green">F</li>
+    </ul>
+  </div>
+`;
+const html2 = `
+  <div id="app">
+    <ul>
+      <li key="E" style="color:green">E</li>
+      <li key="F" style="color:red">F</li>
+      <li key="D" style="color:yellow">D</li>
+      <li key="Q" style="color:blue">Q</li>
+      <li key="B" style="color:#252a34">B</li>
+      <li key="M" style="color:#fc5185">M</li>
+    </ul>
+  </div>
+`;
+```
+
+乱序对比的逻辑如下：
+
+* 用新节点中的头节点的`key`在老节点进行查找
+* 如果在老节点中找到`key`相同的元素，将对应的真实节点移动到`oldStartVNode.el`(老虚拟头节点对应的真实节点)之前，并且将其对应的虚拟节点设置为`null`，之后遇到`null`跳过即可，不再对其进行比对。
+* 继续通过`patch`方法比对移动的节点和`newStartVNode`的标签、属性、文本以及孩子节点
+* 如果在老节点中没有找到`key`相同的元素，会为新节点的头节点创建对应的真实节点，将其插入到`oldStartVNode.el`之前
+* 遍历完成后，将老节点中头指针和尾指针之间多余的元素删除
+
+画图演示下`template`中节点的比对过程：
+![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210116001317.png)
