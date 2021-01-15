@@ -26,7 +26,7 @@
 * 乱序排列时，要用新节点的头节点到老节点中查找，如果能找到，对其复用并移动到相应的位置。如果没有找到，将其插入到真实节点中
 * 遍历完成后，将新节点头指针和尾指针之间的元素插入到真实节点中，老节点头指针和尾指针之间的元素删除
 
-当我们渲染视图之前，需要保存当前渲染的虚拟节点。在下一次渲染视图时，它就是老的虚拟节点，要和新的虚拟节点进行对比：
+在我们渲染视图之前，需要保存当前渲染的虚拟节点。在下一次渲染视图时，它就是老的虚拟节点，要和新的虚拟节点进行对比：
 
 ```javascript
 // src/lifecycle.js
@@ -42,11 +42,11 @@ Vue.prototype._update = function (vNode) {
 };
 ```
 
-下面我们进入`patch`方法的逻辑
+下面我们实现`patch`方法中的逻辑
 
 ### 处理简单情况
 
-在`path`方法中，首先会根据判断`oldVNode`是否为真实`DOM`。如果不是，此时会进行`DOM diff`。
+在`patch`方法中，首先会判断`oldVNode`是否为真实`DOM`。如果不是，会进行`DOM diff`。
 
 如果新的虚拟节点和老的虚拟节点标签不一样，直接用新的虚拟节点创建真实节点，然后替换老的真实节点即可：
 
@@ -126,7 +126,7 @@ export function patch (oldVNode, vNode) {
 }
 ```
 
-当老节点和新节点的标签相同时，要对标签对应真实元素的属性更新，更新原则如下：
+当老节点和新节点的标签相同时，要更新标签对应真实元素的属性，更新规则如下：
 
 * 用新节点中的属性替换老节点中的属性
 * 删除老节点中多余的属性
@@ -168,11 +168,11 @@ function updateProperties (vNode, oldProps = {}) { // 老节点和新节点的�
 
 在比对完当前节点后，要继续比对孩子节点。孩子节点可能有以下情况：
 
-1. 老节点孩子为空，新节点有孩子：将新节点的每一个孩子节点创建为真实节点后插入到老的节点对应的真实父节点中
+1. 老节点孩子为空，新节点有孩子：将新节点的每一个孩子节点创建为真实节点，插入到老节点对应的真实父节点中
 2. 老节点有孩子，新节点孩子为空：将老节点的父节点的孩子节点清空
 3. 老节点和新节点都有孩子: 采用双指针进行对比
 
-`patch`中新增如下代码：
+`patch`中对应的代码如下：
 
 ```javascript
 export function patch (oldVNode, vNode) {
@@ -210,14 +210,14 @@ export function patch (oldVNode, vNode) {
 
 ### 比对优化
 
-在对孩子节点的比对中，`diff`操作对一些常见的`DOM`操作通过双指针进行了优化：
+在对孩子节点的比对中，对一些常见的`DOM`操作通过双指针进行了优化：
 
 * 列表尾部新增元素
 * 列表头部新增元素
 * 列表开始元素移动到末尾
 * 列表结尾元素移动到开头
 
-我们在代码中先声明需要变量：
+我们在代码中先声明需要的变量：
 
 ```javascript
 function updateChildren (oldChildren, newChildren, parent) {
@@ -244,10 +244,10 @@ function isSameVNode (oldVNode, newVNode) {
 
 #### 尾部新增元素
 
-我们在老节点孩子的末尾新增一个元素作为新节点，其对应的`tempalte`如下：
+我们在老节点孩子的末尾新增一个元素作为新节点，其对应的`template`如下：
 
 ```javascript
-const html1 = `
+const template1 = `
   <div id="app">
     <ul>
       <li key="A" style="color:red">A</li>
@@ -257,7 +257,7 @@ const html1 = `
     </ul>
   </div>
 `;
-const html2 = `
+const template2 = `
   <div id="app">
     <ul>
       <li key="A" style="color:red">A</li>
@@ -270,7 +270,7 @@ const html2 = `
 `;
 ```
 
-此时`oldChildren`中的头节点和`newChildren`中的尾节点相同，其比对逻辑如下：
+此时`oldChildren`中的头节点和`newChildren`中的头节点相同，其比对逻辑如下：
 
 * 继续对`oldStartVNode`和`newStartVNode`执行`patch`方法，比对它们的标签、属性、文本以及孩子节点
 * `oldStartVNode`和`newStartVNode`同时后移，继续进行比对
@@ -285,7 +285,6 @@ const html2 = `
 
 ```javascript
 function updateChildren (oldChildren, newChildren, parent) {
-  const map = makeMap();
   while (oldStartIndex <= oldEndIndex && newStartIndex <= newEndIndex) {
     if (isSameVNode(oldStartIndex, newStartIndex)) { // 头和头相等
       // 1. 可能是文本节点：需要继续比对文本节点
@@ -295,6 +294,7 @@ function updateChildren (oldChildren, newChildren, parent) {
       newStartVNode = newChildren[++newStartIndex];
     }
   }
+  // 新节点中剩余元素插入到真实节点中
   for (let i = newStartIndex; i <= newEndIndex; i++) {
     const child = newChildren[i];
     const refEle = oldChildren[oldEndIndex + 1] || null;
@@ -308,7 +308,7 @@ function updateChildren (oldChildren, newChildren, parent) {
 老节点的孩子的头部新增元素`E`，此时新老节点的`template`结构如下：
 
 ```javascript
-const html1 = `
+const template1 = `
   <div id="app">
     <ul>
       <li key="A" style="color:red">A</li>
@@ -318,7 +318,7 @@ const html1 = `
     </ul>
   </div>
 `;
-const html2 = `
+const template2 = `
   <div id="app">
     <ul>
       <li key="E" style="color:purple">E</li>
@@ -331,10 +331,10 @@ const html2 = `
 `;
 ```
 
-其比对逻辑和尾部新增类似，只不过此时是`oldEndVNode`和`startEndVNode`相同：
+其比对逻辑和尾部新增类似，只不过此时是`oldEndVNode`和`newEndVNode`相同：
 
-* 继续通过`patch`比对`oldEndVNode`和`startEndVNode`的标签、属性、文本及孩子节点
-* 此时要将`oldEndVNode`和`startEndVNode`同时前移，继续进行比对
+* 继续通过`patch`比对`oldEndVNode`和`newEndVNode`的标签、属性、文本及孩子节点
+* 此时要将`oldEndVNode`和`newEndVNode`同时前移，继续进行比对
 * 遍历完老节点后，循环停止
 * 将新节点中剩余的元素插入到老的虚拟节点的尾节点对应的真实节点的下一个兄弟节点`oldEndVNode.el.nextSibling`之前
 
@@ -360,10 +360,10 @@ function updateChildren (oldChildren, newChildren, parent) {
 
 #### 开始元素移动到末尾
 
-在新节点中，我们将开始元素`A`移动到末尾，对应的`template`如下： 老节点的孩子的头部新增元素`E`，此时新老节点的`template`结构如下：
+在新节点中，我们将开始元素`A`移动到末尾，对应的`template`如下：
 
 ```javascript
-const html1 = `
+const template1 = `
   <div id="app">
     <ul>
       <li key="A" style="color:red">A</li>
@@ -373,7 +373,7 @@ const html1 = `
     </ul>
   </div>
 `;
-const html2 = `
+const template2 = `
   <div id="app">
     <ul>
       <li key="B" style="color:yellow">B</li>
