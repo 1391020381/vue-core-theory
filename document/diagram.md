@@ -12,7 +12,7 @@
 * [diff according to level](https://excalidraw.com/#json=6565581541081088,cc0lOqBcDY9EqJOd9TVyuA)
 * [per level diff](https://excalidraw.com/#json=5796722332663808,54pTzGwjyCo5CPUDHkgaHA)
 * [diff push](https://excalidraw.com/#json=6105736572567552,Gig1fMuIhKkcrpqHakKoBA)
-* [diff unshift](https://excalidraw.com/#json=5187470886961152,wSLcJBuSy6WaOmFGC2p2vA)
+* [diff unshift](https://excalidraw.com/#json=6424844052725760,CgzsJImo7Gg_Q8na3MzKJQ)
 * [diff first to last](https://excalidraw.com/#json=5300682332569600,qODD4-F-Oo_1GZa4rQUWSQ)
 * [diff last to fist](https://excalidraw.com/#json=6035843160473600,ASdv71Rv5s22N4QJdh7p6w)
 * [diff random](https://excalidraw.com/#json=5963928362287104,AYK8qLGsLDkF6I7Aq67bHg)

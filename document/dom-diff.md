@@ -339,7 +339,7 @@ const template2 = `
 * 将新节点中剩余的元素插入到老的虚拟节点的尾节点对应的真实节点的下一个兄弟节点`oldEndVNode.el.nextSibling`之前
 
 该逻辑的示意图如下：  
-![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210115173756.png)
+![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210116194617.png)
 
 `patch`中新增代码如下：
 
