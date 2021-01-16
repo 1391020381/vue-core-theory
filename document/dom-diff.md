@@ -540,7 +540,7 @@ const html2 = `
 * 遍历完成后，将老节点中头指针和尾指针之间多余的元素删除
 
 画图演示下`template`中节点的比对过程：
-![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210116001317.png)
+![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210116195428.png)
 
 在比对开始之前，我们要先遍历老的孩子节点，生成`key`与索引对应的`map`:
 
