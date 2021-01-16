@@ -541,3 +541,89 @@ const html2 = `
 
 画图演示下`template`中节点的比对过程：
 ![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210116001317.png)
+
+在代码中，我们要先遍历老的孩子节点，生成`key`与索引对应的`map`:
+
+```javascript
+function updateChildren (oldChildren, newChildren, parent) {
+  // 更新子节点:
+  //  1. 一层一层进行比较，如果发现有一层不一样，直接就会用新节点的子集来替换父节点的子集。
+  //  2. 比较时会采用双指针，对常见的操作进行优化
+  let oldStartIndex = 0,
+    oldStartVNode = oldChildren[0],
+    oldEndIndex = oldChildren.length - 1,
+    oldEndVNode = oldChildren[oldEndIndex];
+  let newStartIndex = 0,
+    newStartVNode = newChildren[0],
+    newEndIndex = newChildren.length - 1,
+    newEndVNode = newChildren[newEndIndex];
+
+  function makeMap () {
+    const map = {};
+    for (let i = 0; i < oldChildren.length; i++) {
+      const child = oldChildren[i];
+      child.key && (map[child.key] = i);
+    }
+    return map;
+  }
+
+  const map = makeMap();
+}
+```
+
+有了`map`之后，便可以很方便的通过`key`来找到老孩子节点的索引，然后通过索引直接找到对应的孩子节点，而不用再次进行遍历操作。
+
+接下来书写处理乱序节点的代码：
+
+```javascript
+function updateChildren (oldChildren, newChildren, parent) {
+  while (oldStartIndex <= oldEndIndex && newStartIndex <= newEndIndex) {
+    if (oldStartVNode == null) { // 老节点null时跳过该次循环
+      oldStartVNode = oldChildren[++oldStartIndex];
+      continue;
+    } else if (oldEndVNode == null) {
+      oldEndVNode = oldChildren[--oldEndIndex];
+      continue;
+    } else if (isSameVNode(oldStartIndex, newStartIndex)) { // 头和头相等
+      // some code ...  
+    } else if (isSameVNode(oldStartVNode, newEndVNode)) { // 将开头元素移动到了末尾：尾和头相同
+      // some code ...  
+    } else if (isSameVNode(oldEndVNode, newStartVNode)) { // 将结尾元素移动到了开头
+      // some code ...  
+    } else {
+      // 1. 用key来进行寻找，找到将其移动到头节点之前
+      // 2. 没有找到，将新头节点插入到老头节点之前
+      let moveIndex = map[newStartVNode.key]; // 通过key在map中找到相同元素的索引
+      if (moveIndex != null) { // 找到了
+        const moveVNode = oldChildren[moveIndex];
+        parent.insertBefore(moveVNode.el, oldStartVNode.el);
+        oldChildren[moveIndex] = null; // 将移动这项标记为null，之后跳过，不再进行比对
+        // 还有对其属性和子节点再进行比较
+        patch(moveVNode, newStartVNode);
+      } else {
+        // 为新头节创建对应的真实节点并插入到老节点的头节点之前
+        parent.insertBefore(createElement(newStartVNode), oldStartVNode.el);
+      }
+      newStartVNode = newChildren[++newStartIndex];
+    }
+  }
+  // some code ...
+
+  // 老节点中从头指针到尾指针为多余的元素，需要删除掉
+  for (let i = oldStartIndex; i <= oldEndIndex; i++) {
+    const child = oldChildren[i];
+    parent.removeChild(child.el);
+  }
+}
+```
+
+当新节点在老节点中存在时，我们会将找到的真实节点移动到相应的位置。此时老节点中的该节点不需要再被遍历，为了防止数组塌陷，便将该节点设置为`null`。之后再遍历时，如果发现节点的值为`null`，便跳过本次循环。
+
+现在我们便完成了`Vue`在数组更新时的`DOM Diff`逻辑。
+
+### 写在最后
+
+文中主要书写了`patch`方法的代码，其主要功能如下：
+![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210116185333.png)
+
+希望小伙伴在读完本文之后，可以对`Vue`的`DOM Diff`过程有更深的理解。

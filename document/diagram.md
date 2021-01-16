@@ -16,3 +16,4 @@
 * [diff first to last](https://excalidraw.com/#json=5300682332569600,qODD4-F-Oo_1GZa4rQUWSQ)
 * [diff last to fist](https://excalidraw.com/#json=6035843160473600,ASdv71Rv5s22N4QJdh7p6w)
 * [diff random](https://excalidraw.com/#json=5963928362287104,AYK8qLGsLDkF6I7Aq67bHg)
+* [patch logic](https://excalidraw.com/#json=6121409847754752,YEsF5Jr3w7nBKTquD0IALQ)
