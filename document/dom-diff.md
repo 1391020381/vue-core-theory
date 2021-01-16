@@ -2,7 +2,7 @@
 
 `Vue`创建视图分为俩种情况：
 
-1. 首次渲染，会用组件`template`转成的真实`DOM`来替换应用中的根元素
+1. 首次渲染，会用组件`template`转换成的真实`DOM`来替换应用中的根元素
 2. 当数据更新后，视图重新渲染，此时并不会重新通过组件`template`对应的虚拟节点来创建真实`DOM`，而是会用老的虚拟节点和新的虚拟节点进行比对，根据比对结果来更新`DOM`
 
 第二种情况就是`Vue`中经常谈到的`DOM Diff`，接下来我们将详细介绍新老节点的比对过程。
@@ -504,7 +504,7 @@ function updateChildren (oldChildren, newChildren, parent) {
 
 ### 乱序比对
 
-当进行比对的元素不满足优化条件时，就要进行乱序对比。下面是俩个乱序的`template`为例，看下它们的具体比对过程：
+当进行比对的元素不满足优化条件时，就要进行乱序对比。下面是俩个乱序的`template`，看下它们的具体比对过程：
 
 ```javascript
 const html1 = `
@@ -531,9 +531,9 @@ const html2 = `
 `;
 ```
 
-乱序对比的逻辑如下：
+乱序比对的逻辑如下：
 
-* 用新节点中的头节点的`key`在老节点进行查找
+* 用新节点中的头节点的`key`在老节点中进行查找
 * 如果在老节点中找到`key`相同的元素，将对应的真实节点移动到`oldStartVNode.el`(老虚拟头节点对应的真实节点)之前，并且将其对应的虚拟节点设置为`null`，之后遇到`null`跳过即可，不再对其进行比对。
 * 继续通过`patch`方法比对移动的节点和`newStartVNode`的标签、属性、文本以及孩子节点
 * 如果在老节点中没有找到`key`相同的元素，会为新节点的头节点创建对应的真实节点，将其插入到`oldStartVNode.el`之前
@@ -542,22 +542,10 @@ const html2 = `
 画图演示下`template`中节点的比对过程：
 ![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210116001317.png)
 
-在代码中，我们要先遍历老的孩子节点，生成`key`与索引对应的`map`:
+在比对开始之前，我们要先遍历老的孩子节点，生成`key`与索引对应的`map`:
 
 ```javascript
 function updateChildren (oldChildren, newChildren, parent) {
-  // 更新子节点:
-  //  1. 一层一层进行比较，如果发现有一层不一样，直接就会用新节点的子集来替换父节点的子集。
-  //  2. 比较时会采用双指针，对常见的操作进行优化
-  let oldStartIndex = 0,
-    oldStartVNode = oldChildren[0],
-    oldEndIndex = oldChildren.length - 1,
-    oldEndVNode = oldChildren[oldEndIndex];
-  let newStartIndex = 0,
-    newStartVNode = newChildren[0],
-    newEndIndex = newChildren.length - 1,
-    newEndVNode = newChildren[newEndIndex];
-
   function makeMap () {
     const map = {};
     for (let i = 0; i < oldChildren.length; i++) {
@@ -608,7 +596,6 @@ function updateChildren (oldChildren, newChildren, parent) {
     }
   }
   // some code ...
-
   // 老节点中从头指针到尾指针为多余的元素，需要删除掉
   for (let i = oldStartIndex; i <= oldEndIndex; i++) {
     const child = oldChildren[i];
@@ -619,7 +606,7 @@ function updateChildren (oldChildren, newChildren, parent) {
 
 当新节点在老节点中存在时，我们会将找到的真实节点移动到相应的位置。此时老节点中的该节点不需要再被遍历，为了防止数组塌陷，便将该节点设置为`null`。之后再遍历时，如果发现节点的值为`null`，便跳过本次循环。
 
-现在我们便完成了`Vue`在数组更新时的`DOM Diff`逻辑。
+现在我们便完成了`Vue`在数组更新时所有的`DOM Diff`逻辑。
 
 ### 写在最后
 
