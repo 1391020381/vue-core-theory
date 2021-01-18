@@ -163,6 +163,7 @@ class Watcher {
       this.getter = this.exprOrFn;
     }
     // some code ...
+    // 初始化时计算属性的getter不会执行，用到的时候才会执行
     this.value = this.lazy ? undefined : this.get();
   }
 
@@ -201,8 +202,8 @@ class Watcher {
 }
 ```
 
-`watcher.evaluate`中的逻辑便是执行我们在定义计算属性时传入的回调函数(`getter`)，将其赋值给`watcher.value`，并在取值完毕后，将`watcher.dirty`置为`false`
-。这样再次取值时便直接将`watcher.value`返回即可，而不用再执行回调函数重新计算。
+`watcher.evaluate`中的逻辑便是执行我们在定义计算属性时传入的回调函数(`getter`)，将其返回值赋值给`watcher.value`，并在取值完毕后，将`watcher.dirty`置为`false`
+。这样再次取值时便直接将`watcher.value`返回即可，而不用再执行回调函数进行重复计算。
 
 当计算属性的依赖属性(`this.firstName`和`this.lastName`)发生变化后，我们要更新视图，让计算属性重新执行`getter`函数获取到最新值。所以代码中判断`Dep.target`(此时为渲染`watcher`)
 是否存在，如果存在会为依赖属性收集对应的渲染`watcher`。这样在依赖属性更新时，便会通过渲染`watcher`来通知视图更新，获取到最新的计算属性。
@@ -210,7 +211,7 @@ class Watcher {
 ### 依赖属性更新
 
 以文章开始时的`demo`为例，首次执行时的逻辑如下图：
-![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210118171758.png)
+![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210118174936.png)
 
 用文字来描述：
 
@@ -222,7 +223,7 @@ class Watcher {
 * 此时为`fullName`对应的`computed watcher`中的`dep`(也就是`firstName`和`lastName`对应的`dep`)收集渲染`watcher`
 * 完成`fullName`的取值过程，此时`firstName`和`lastName`的`dep`中分别收集的`watcher`为`[computed watcher, render watcher]`
 
-假设我们更新了依赖，会通过收集的`watcher`进行更新：
+假设我们更新了依赖，会通知收集的`watcher`进行更新：
 
 ```javascript
 vm.firstName = 'F'
@@ -239,5 +240,5 @@ vm.firstName = 'F'
 
 文章的源代码在这里：[传送门](https://github.com/wangkaiwd/vue-core-theory/blob/computed/src/state.js#L21)
 
-本文从一个简单的计算属性的例子开始，一步步实现了计算属性。并且针对这个例子，详细分析了页面渲染时的整个代码执行逻辑。希望小伙伴们在读完本文后，能够从源码的角度，分析自己代码中对应计算属性相关代码的执行流程，体会一下`Vue`
+本文从一个简单的计算属性例子开始，一步步实现了计算属性。并且针对这个例子，详细分析了页面渲染时的整个代码执行逻辑。希望小伙伴们在读完本文后，能够从源码的角度，分析自己代码中对应计算属性相关代码的执行流程，体会一下`Vue`
 的`computed`属性到底帮我们做了些什么。
