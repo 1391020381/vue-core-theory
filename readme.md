@@ -5,7 +5,7 @@
 `Vue`执行流程：
 ![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210113110645.png)
 
-实现功能如下：
+实现了以下功能，并为其创建了对应的实现教程：
 
 * 数据劫持
 * 文本编译
