@@ -15,16 +15,18 @@ function updateProperties (vNode, oldProps = {}) { // 老节点和新节点的�
       }
     }
   }
-  const style = oldProps.style || {}; // 删除老节点中多余的样式
-  for (const key in style) {
-    if (props.style && !props.style.hasOwnProperty(key) && style.hasOwnProperty(key)) {
-      el.style[key] = '';
-    }
-  }
   // 如果老节点中有，而新节点中没有，需要将其删除
   for (const key in oldProps) {
     if (oldProps.hasOwnProperty(key) && !props.hasOwnProperty(key)) {
       el.removeAttribute(key);
+    }
+  }
+  const style = oldProps.style || {};
+  const newStyle = props.style || {};
+  // 删除老节点中多余的样式
+  for (const key in style) {
+    if (!newStyle.hasOwnProperty(key) && style.hasOwnProperty(key)) {
+      el.style[key] = '';
     }
   }
 }
@@ -169,7 +171,7 @@ function updateChildren (oldChildren, newChildren, parent) {
       // 1. 用key来进行寻找，找到将其移动到头节点之前
       // 2. 没有找到，将新头节点插入到老头节点之前
       let moveIndex = map[newStartVNode.key];
-      if (moveIndex != undefined) { // 找到了
+      if (moveIndex != null) { // 找到了
         const moveVNode = oldChildren[moveIndex];
         parent.insertBefore(moveVNode.el, oldStartVNode.el);
         oldChildren[moveIndex] = null; // 将移动这项标记为null，之后跳过，不再进行比对
