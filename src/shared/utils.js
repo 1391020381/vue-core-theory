@@ -22,3 +22,7 @@ export function proxy (target, key, source) {
 export function noop () {
 
 }
+
+export function isObject (value) {
+  return typeof value === 'object' && value != null;
+}
