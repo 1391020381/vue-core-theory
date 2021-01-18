@@ -4,7 +4,7 @@
 
 > 官网对计算属性的介绍在这里：[传送门](https://cn.vuejs.org/v2/guide/computed.html#%E8%AE%A1%E7%AE%97%E5%B1%9E%E6%80%A7)
 
-计算属性是`Vue`中很常用的一个配置项，这里我们先用一个简单的例子来讲解它的功能：
+计算属性是`Vue`中很常用的一个配置项，我们先用一个简单的例子来讲解它的功能：
 
 ```html
 
@@ -28,14 +28,14 @@
 </script>
 ```
 
-在例子中，在计算属性中定义的`fullName`函数，会最中处理为`vm.fullName`的`getter`函数。所以`vm.fullName === 'FooBar'`。
+在例子中，计算属性中定义的`fullName`函数，会最终处理为`vm.fullName`的`getter`函数。所以`vm.fullName = this.firstName + this.lastName = 'FooBar'`。
 
 计算属性有以下特点:
 
-* 计算属性可以简化模板中的表达式，用户书可以写更加简洁易读的`template`
-* `Vue`为计算属性提供而了缓存功能，只有当它依赖的属性(例子中的`this.firstName`和`this.lastName`)发生变化时，才会重新执行属性对应的`getter`函数，否则会将之前计算好的值返回。
+* 计算属性可以简化模板中的表达式，用户可以书写更加简洁易读的`template`
+* `Vue`为计算属性提供了缓存功能，只有当它依赖的属性(例子中的`this.firstName`和`this.lastName`)发生变化时，才会重新执行属性对应的`getter`函数，否则会将之前计算好的值返回。
 
-正是由于`computed`的缓存功能，使得用户在使用时会优先考虑它，而不是`watch`、`methods`属性。
+正是由于`computed`的缓存功能，使得用户在使用时会优先考虑它，而不是使用`watch`、`methods`属性。
 
 在了解了计算属性的用法后，我们通过代码来一步步实现`computed`，并让它完成上边的例子。
 
@@ -131,6 +131,8 @@ function createComputedGetter (key) {
       // 只有在dirty为true的时候才会重新执行计算属性
       watcher.evaluate();
       if (Dep.target) {
+        // 此时，如果栈中有渲染watcher,会为当前计算属性watcher中收集的所有dep再收集渲染watcher
+        // 在watcher收集的dep对应的属性(this.firstName,this.lastName)更新后，通知视图更新，从而更新页面中的计算属性
         watcher.depend();
       }
     }
