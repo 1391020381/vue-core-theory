@@ -239,4 +239,94 @@ function createElement (vNode) {
 }
 ```
 
+在处理虚拟节点时，我们会获取到在创建组件虚拟节点中为`props`添加的`init`钩子函数，将`vNode`传入执行`init`函数：
+
+```javascript
+props.hook = { // 在渲染真实节点时会调用init钩子函数
+  init (vNode) {
+    const child = vNode.componentInstance = new Ctor();
+    child.$mount();
+  }
+};
+```
+
+此时便会通过`new Ctor()`来进行子组件的一系列初始化工作：
+
+* `this._init`
+* `initState`
+* ...
+
+`Ctor`是通过`Vue.extend`来生成的，而在执行`Vue.extend`的时候，我们已经将组件对应的配置项传入。但是由于配置项中缺少`el`选项，所以要手动执行`$mount`方法来挂载组件。
+
+在执行`$mount`之后，会将组件`template`创建为真实`DOM`并设置到`vm.$el`选项上。这里我们将组件实例放到了`vNode`的`componentInstance`属性上，最终在`createComponent`
+中会判断如果有该属性则为组件虚拟节点，并将其对应的`DOM`(`vNode.componentInstance`)返回，最终挂载到父节点上，渲染到页面中。
+
+整个渲染流程画图总结一下：
+![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210119160445.png)
+
 ### 最后
+
+明白了组件渲染流程之后，最后我们来看一下父子组件的生命周期函数的执行过程：
+
+```html
+
+<div id="app">
+  {{ name }}
+  <aa></aa>
+</div>
+<script>
+  const vm = new Vue({
+    el: '#app',
+    components: {
+      aa: {
+        template: `<button>aa</button>`,
+        beforeCreate () {
+          console.log('child beforeCreate');
+        },
+        created () {
+          console.log('child created');
+        },
+        beforeMount () {
+          console.log('child beforeMount');
+        },
+        mounted () {
+          console.log('child mounted');
+        }
+      },
+    },
+    data () {
+      return {
+        name: 'ss'
+      };
+    },
+    beforeCreate () {
+      console.log('parent beforeCreate');
+    },
+    created () {
+      console.log('parent created');
+    },
+    beforeMount () {
+      console.log('parent beforeMount');
+    },
+    mounted () {
+      console.log('parent mounted');
+    }
+  });
+</script>
+```
+
+![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210119161051.png)
+
+在理解了`Vue`的组件渲染流程后，便可以很轻易的解释这个打印结果了：
+
+* 首先会初始化父组件，执行父组件的`beforeCreate,created`钩子
+* 接下来会挂载父组件，在挂载之前会先执行`beforeMount`钩子
+* 当组件开始挂载时，首先会生成组件虚拟节点，之后在创建真实及节点时，要`new SubComponent`来创建子组件，得到子组件挂载后的`vm.$el`
+* 而在实例化子组件的过程中，会执行子组件的`beforeCreate,created,beforeMount,mounted`钩子
+* 在子组件创建完毕后，完成父组件的创建，执行父组件的`mounted`钩子
+
+### 结语
+
+文章源代码在这里：[https://github.com/wangkaiwd/vue-core-theory/blob/render-component/src/global-api/index.js]
+
+希望本文能帮小伙伴理解`Vue`组件的整个渲染流程，在面试和工作中所向披靡！
