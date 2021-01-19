@@ -3,7 +3,7 @@
 `Vue`中组件分为全局组件和局部组件：
 
 * 全局组件：通过`Vue.component(id,definition)`方法进行注册，并且可以在任何组件中被访问
-* 局部组件：在组件内的`components`属性中定义，只能在局部访问
+* 局部组件：在组件内的`components`属性中定义，只能在组件内访问
 
 下面是一个例子：
 
@@ -44,7 +44,7 @@ const vm = new Vue({
 页面中会渲染全局定义的`my-button`组件和局部定义的`aa`组件:
 ![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210119142718.png)
 
-接下来笔者会详细讲解组件全局组件和局部组件到底是如何渲染到页面上的，并实现相关代码。
+接下来笔者会详细讲解全局组件和局部组件到底是如何渲染到页面上的，并实现相关代码。
 
 ### 全局组件
 
@@ -106,7 +106,7 @@ Vue.extend = function (extendOptions) {
 };
 ```
 
-> 如果有小伙伴对`JavaScript`原型链不太了解的话，可以看我的这篇文章: [彻底理解：JavaScript原型和原型链](https://zhuanlan.zhihu.com/p/146922194)
+> 如果有小伙伴对`JavaScript`原型链不太了解的话，可以看笔者的这篇文章: [彻底理解：JavaScript原型和原型链](https://zhuanlan.zhihu.com/p/146922194)
 
 核心的继承代码如下：
 
@@ -124,7 +124,7 @@ Sub.prototype.constructor = Sub;
 `Object.create`会创建一个新对象，使用一个已经存在的对象作为新对象的原型。这里将创建的新对象赋值给了`Sub.prototype`，相当于做了如下俩件事：
 
 * `Sub.prototype = {}`
-* `Sub.prototype.__proto__=== Super.prototype`
+* `Sub.prototype.__proto__ = Super.prototype`
 
 为`Sub.prototype`赋值后，其之前拥有的`constructor`属性便会被覆盖，这里需要再手动指定一下`Sub.prototype.constructor = Sub`
 
@@ -327,6 +327,6 @@ props.hook = { // 在渲染真实节点时会调用init钩子函数
 
 ### 结语
 
-文章源代码在这里：[https://github.com/wangkaiwd/vue-core-theory/blob/render-component/src/global-api/index.js]
+文章源代码在这里：[传送门](https://github.com/wangkaiwd/vue-core-theory/blob/render-component/src/global-api/index.js)
 
 希望本文能帮小伙伴理解`Vue`组件的整个渲染流程，在面试和工作中所向披靡！
