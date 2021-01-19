@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<script src="../../dist/vue.js"></script>
+<body>
+<div id="app">
+  {{ name }}
+  <aa></aa>
+</div>
+<script>
+  const vm = new Vue({
+    el: '#app',
+    components: {
+      aa: {
+        template: `<button>aa</button>`,
+        beforeCreate () {
+          console.log('child beforeCreate');
+        },
+        created () {
+          console.log('child created');
+        },
+        beforeMount () {
+          console.log('child beforeMount');
+        },
+        mounted () {
+          console.log('child mounted');
+        }
+      },
+    },
+    data () {
+      return {
+        name: 'ss'
+      };
+    },
+    beforeCreate () {
+      console.log('parent beforeCreate');
+    },
+    created () {
+      console.log('parent created');
+    },
+    beforeMount () {
+      console.log('parent beforeMount');
+    },
+    mounted () {
+      console.log('parent mounted');
+    }
+  });
+</script>
+</body>
+</html>
