@@ -163,7 +163,7 @@ strategies.components = function (parentVal, childVal) {
 ```
 
 `components`的合并利用了`JavaScript`的原型链，将`Vue.options.components`中的全局组件放到了合并后对象的原型上，而将`options`中`components`
-属性定义的局部组件放到了自身的属性上。这样当取值时，首先会从自身属性上查找，然后再到原型链上查找，也就是优先渲染局部组件，如果没有局部组件就会去全局组件中查找。
+属性定义的局部组件放到了自身的属性上。这样当取值时，首先会从自身属性上查找，然后再到原型链上查找，也就是优先渲染局部组件，如果没有局部组件就会去渲染全局组件。
 
 合并完`components`之后，接下来要创建组件对应的虚拟节点：
 
@@ -199,16 +199,16 @@ function createVElement (tag, props = {}, ...children) {
 }
 ```
 
-在创建虚拟节点时，如果`tag`不是`html`中的定义的标签，便需要创建组件对应的虚拟节点。
+在创建虚拟节点时，如果`tag`不是`html`中定义的标签，便需要创建组件对应的虚拟节点。
 
 组件虚拟节点中做了下面几件事：
 
 * 通过`vm.$options`拿到合并后的`components`
-* 用`Vue.extend`将`components`中的对象生成`Vue`子类构造函数
+* 用`Vue.extend`将`components`中的对象转换为`Vue`子类构造函数
 * 在虚拟节点上的`props`上添加钩子函数，方便在之后调用
-* 执行`vNode`函数创建组件虚拟节点，组件虚拟节点会新增`componentsOptions`属性来存放组件的一些选项
+* 执行`vNode`函数创建组件虚拟节点，组件虚拟节点会新增`componentOptions`属性来存放组件的一些选项
 
-在拿到虚拟节点之后，便会通过虚拟节点来创建真实节点，如果是组件虚拟节点要单独处理：
+在生成虚拟节点之后，便会通过虚拟节点来创建真实节点，如果是组件虚拟节点要单独处理：
 
 ```javascript
 // 处理组件虚拟节点
@@ -239,7 +239,7 @@ function createElement (vNode) {
 }
 ```
 
-在处理虚拟节点时，我们会获取到在创建组件虚拟节点中为`props`添加的`init`钩子函数，将`vNode`传入执行`init`函数：
+在处理虚拟节点时，我们会获取到在创建组件虚拟节点时为`props`添加的`init`钩子函数，将`vNode`传入执行`init`函数：
 
 ```javascript
 props.hook = { // 在渲染真实节点时会调用init钩子函数
@@ -258,8 +258,8 @@ props.hook = { // 在渲染真实节点时会调用init钩子函数
 
 `Ctor`是通过`Vue.extend`来生成的，而在执行`Vue.extend`的时候，我们已经将组件对应的配置项传入。但是由于配置项中缺少`el`选项，所以要手动执行`$mount`方法来挂载组件。
 
-在执行`$mount`之后，会将组件`template`创建为真实`DOM`并设置到`vm.$el`选项上。这里我们将组件实例放到了`vNode`的`componentInstance`属性上，最终在`createComponent`
-中会判断如果有该属性则为组件虚拟节点，并将其对应的`DOM`(`vNode.componentInstance`)返回，最终挂载到父节点上，渲染到页面中。
+在执行`$mount`之后，会将组件`template`创建为真实`DOM`并设置到`vm.$el`选项上。执行`props.hook.init`方法时，将组件实例放到了`vNode`的`componentInstance`
+属性上，最终在`createComponent`中会判断如果有该属性则为组件虚拟节点，并将其对应的`DOM`(`vNode.componentInstance.$el`)返回，最终挂载到父节点上，渲染到页面中。
 
 整个渲染流程画图总结一下：
 ![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210119160445.png)
@@ -321,9 +321,9 @@ props.hook = { // 在渲染真实节点时会调用init钩子函数
 
 * 首先会初始化父组件，执行父组件的`beforeCreate,created`钩子
 * 接下来会挂载父组件，在挂载之前会先执行`beforeMount`钩子
-* 当组件开始挂载时，首先会生成组件虚拟节点，之后在创建真实及节点时，要`new SubComponent`来创建子组件，得到子组件挂载后的`vm.$el`
+* 当父组件开始挂载时，首先会生成组件虚拟节点，之后在创建真实及节点时，要`new SubComponent`来创建子组件，得到子组件挂载后的真实`DOM`:`vm.$el`
 * 而在实例化子组件的过程中，会执行子组件的`beforeCreate,created,beforeMount,mounted`钩子
-* 在子组件创建完毕后，完成父组件的创建，执行父组件的`mounted`钩子
+* 在子组件挂载完毕后，继续完成父组件的挂载，执行父组件的`mounted`钩子
 
 ### 结语
 
