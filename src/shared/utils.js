@@ -35,3 +35,7 @@ function makeMap (str) {
 }
 
 export const isReservedTag = makeMap('a,div,span,p,input,textarea,ul,li,button');
+
+export function isObject (value) {
+  return typeof value === 'object' && value != null;
+}

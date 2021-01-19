@@ -12,9 +12,7 @@ function observe (data) {
   }
 }
 
-function defineReactive (target, key) {
-
-  let value = target[key];
+function defineReactive (target, key, value) {
   // 继续对value进行监听，如果value还是对象的话，会继续new Observer，执行defineProperty来为其设置get/set方法
   // 否则会在observe方法中什么都不做
   let childOb = observe(value);
@@ -68,7 +66,7 @@ class Observer {
   walk () {
     for (const key in this.value) {
       if (this.value.hasOwnProperty(key)) {
-        defineReactive(this.value, key);
+        defineReactive(this.value, key, this.value[key]);
       }
     }
   }
@@ -80,6 +78,37 @@ class Observer {
   }
 }
 
+function set (target, key, value) {
+  if (Array.isArray(target)) {// 数组直接调用splice方法
+    target.splice(key, 0, value);
+    return value;
+  }
+  if (typeof target === 'object' && target != null) { // 对象
+    const ob = target.__ob__;
+    // 通过defineReactive为对象新加的属性添加set/get方法，并进行依赖收集
+    defineReactive(target, key, value);
+    // 对象更新后通知视图更新
+    ob.dep.notify();
+    return value;
+  }
+}
+
+function del (target, key) {
+  if (Array.isArray(target)) {
+    // 代用splice删除元素
+    target.splice(key, 1);
+    return;
+  }
+  if (typeof target === 'object' && target != null) { // 对象
+    const ob = target.__ob__;
+    delete target.key;
+    // 删除对象属性后通知视图更新
+    ob.dep.notify();
+  }
+}
+
 export {
-  observe
+  observe,
+  set,
+  del
 };
