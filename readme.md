@@ -7,7 +7,7 @@
 `Vue`执行流程：
 ![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210113110645.png)
 
-实现了以下功能，并为其创建了对应的实现教程：
+实现了以下功能，并对每一部分的实现编写了详细的教程：
 
 * [数据劫持](https://github.com/wangkaiwd/vue-core-theory/blob/master/document/01.data-proxy.md)
 * [文本编译](https://github.com/wangkaiwd/vue-core-theory/blob/master/document/02.template-compile.md)
@@ -19,6 +19,11 @@
 * [`diff`算法](https://github.com/wangkaiwd/vue-core-theory/blob/master/document/08.dom-diff.md)
 * [`computed`](https://github.com/wangkaiwd/vue-core-theory/blob/master/document/09.computed.md)
 * [组件渲染](https://github.com/wangkaiwd/vue-core-theory/blob/master/document/10.render-component.md)
+
+为了方便阅读，笔者也在知乎发表了系列文章：
+
+![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210122150437.png)
+喜欢在知乎阅读的小伙伴点这里：[传送门](https://zhuanlan.zhihu.com/p/268029179)
 
 ### 快速开始
 
