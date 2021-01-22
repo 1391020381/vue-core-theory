@@ -2,12 +2,14 @@
 
 为了理解`Vue`的底层到底帮我们做了什么，这里笔者参考`Vue`的源码，删除源码中的一些边界情况处理，专注于核心逻辑，对一些工作中常用以及面试中常考的`Vue`的核心功能进行一一实现。
 
+![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/Vue%20Source%20Code.jpg)
+
 `Vue`执行流程：
 ![](https://raw.githubusercontent.com/wangkaiwd/drawing-bed/master/20210113110645.png)
 
 实现了以下功能，并为其创建了对应的实现教程：
 
-* 数据劫持
+* [数据劫持]()
 * 文本编译
 * 生成虚拟`DOM`
 * 将虚拟`DOM`处理为真实`DOM`
