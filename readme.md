@@ -9,17 +9,16 @@
 
 实现了以下功能，并为其创建了对应的实现教程：
 
-* [数据劫持]()
-* 文本编译
-* 生成虚拟`DOM`
-* 将虚拟`DOM`处理为真实`DOM`
-* 生命周期合并
-* 依赖收集
-* 异步更新和`$nextTick`
-* `watch`
-* `diff`算法
-* `computed`
-* `Vue.extend` 创建虚拟节点
+* [数据劫持](https://github.com/wangkaiwd/vue-core-theory/blob/master/document/01.data-proxy.md)
+* [文本编译](https://github.com/wangkaiwd/vue-core-theory/blob/master/document/02.template-compile.md)
+* [组件初渲染](https://github.com/wangkaiwd/vue-core-theory/blob/master/document/03.initial-render.md)
+* [生命周期合并](https://github.com/wangkaiwd/vue-core-theory/blob/master/document/04.lifecycle-merge.md)
+* [依赖收集](https://github.com/wangkaiwd/vue-core-theory/blob/master/document/05.collect-dependency.md)
+* [异步更新和`$nextTick`](https://github.com/wangkaiwd/vue-core-theory/blob/master/document/06.async-update.md)
+* [`watch`](https://github.com/wangkaiwd/vue-core-theory/blob/master/document/07.watch.md)
+* [`diff`算法](https://github.com/wangkaiwd/vue-core-theory/blob/master/document/08.dom-diff.md)
+* [`computed`](https://github.com/wangkaiwd/vue-core-theory/blob/master/document/09.computed.md)
+* [组件渲染](https://github.com/wangkaiwd/vue-core-theory/blob/master/document/10.render-component.md)
 
 ### 快速开始
 
