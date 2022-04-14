@@ -1,5 +1,5 @@
 import { nodeResolve } from '@rollup/plugin-node-resolve'; // 一个rollup插件，对在node_modules中使用的第三方模块，使用node解析算法来定位模块
-
+import serve from 'rollup-plugin-serve'; // 为打包文件提供服务的rollup插件
 export default {
   input: 'src/index.js', // 入口文件
   output: {
@@ -10,5 +10,9 @@ export default {
   },
   plugins: [
     nodeResolve(),
+    serve({
+      open: true, // 服务器启动，自动打开浏览器
+      openPage: '/usage/index.html' // 服务器服务器启动，浏览器自动打开的页面
+    })
   ]
 };
